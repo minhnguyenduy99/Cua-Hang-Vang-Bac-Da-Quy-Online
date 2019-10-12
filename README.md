@@ -10,9 +10,13 @@ Sau khi clone project về thì chạy 2 dòng lệnh sau để thêm package tr
 
 > npm update
 
+> npm update --save-dev
+
 ## Update package trong server
 
 > cd server
+
+> npm update
 
 > npm update --save-dev
 
