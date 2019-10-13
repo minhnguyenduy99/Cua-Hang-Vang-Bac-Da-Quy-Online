@@ -1,22 +1,11 @@
 const mysql = require('mysql');
+const config = require('../config');
 
-class DBConnection{
-    constructor(connectConfig){
-        this.connectConfig = connectConfig;   
-    }
-
-    connect(){
-        const connection = mysql.createConnection(this.connectConfig);
-        connection.connect((err) => {
-            if (err){
-                console.log('Connect to database failed');
-                db.end();
-            }
-            else{
-                console.log('Connect to database successfully');
-            }
-        })
-    }
+var conn = mysql.createConnection(config.dbConnectConfig);
+var connected = true;
+module.exports = {
+    connect: function(callback){
+        conn.connect(callback);
+    },
+    connection: conn,
 }
-
-module.exports = DBConnection;
