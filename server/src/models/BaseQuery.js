@@ -37,6 +37,18 @@ module.exports = class BaseQuery{
         return query;
     }
 
+    static deleteString(table, conditions){
+        var query = `delete from ${table} `;
+
+        if (conditions == undefined){
+            return query;
+        }
+
+        query = query.concat(BaseQuery.getConditionString(conditions));
+
+        return query;
+    }
+
     static getValueInsertString(data){
         if (data.length == 1){
             return '(' + BaseQuery.getFieldSelectString(data[0]) + ')'
@@ -52,5 +64,25 @@ module.exports = class BaseQuery{
         return fields.reduce((pre, cur, curIndex, array) => {
             return `${pre}, ${cur}`
         })
+    }
+
+    static getConditionString(conditions){
+        if (conditions == undefined){
+            return '';
+        }
+
+        var conditionQuery = 'WHERE ';
+
+        const keys = Object.keys(conditions);
+        
+        keys.forEach((key, index) => {
+            var conditionStr = `${key} = '${conditions[key]}' `
+            // last key
+            if (index != keys.length -1)
+                conditionStr = conditionStr.concat('AND ');
+            conditionQuery = conditionQuery.concat(conditionStr);
+        })
+
+        return conditionQuery;
     }
 }

@@ -1,4 +1,5 @@
 const BaseModel = require('./BaseModel');
+const crypto = require('crypto');
 
 module.exports = class User extends BaseModel{
     
@@ -15,7 +16,17 @@ module.exports = class User extends BaseModel{
         return BaseModel.find(User.name, conditions);
     }
 
-    static insert(model){
-        return BaseModel.insert(User.name, [model.data]);
+    static delete(conditions){
+        return BaseModel.delete(User.name, conditions);
+    }
+
+    save(){
+        const id = crypto.randomBytes(8).toString('hex');
+        const savedData = {
+            id: id,
+            username: this.data.username,
+            password: this.data.password
+        }  
+        return BaseModel.insert(User.name, [savedData]);
     }
 }

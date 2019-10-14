@@ -16,7 +16,7 @@ module.exports = class BaseModel{
         return this;
     }
 
-    exec(){
+    execSelect(){
         if (this.queryOptions == undefined){
             throw new Error('The query command has not been called yet');
         }
@@ -86,6 +86,23 @@ module.exports = class BaseModel{
                         resolve(results);
                     }
                 })
+        })
+    }
+
+    static delete(className, conditions){
+
+        return new Promise((resolve, reject) => {
+            db.connection.query(
+                query.deleteString(className, conditions),
+                (err, results, fields) => {
+                    if (err){
+                        reject(err);
+                    }
+                    else{
+                        resolve(results);
+                    }
+                }
+            )
         })
     }
 }
