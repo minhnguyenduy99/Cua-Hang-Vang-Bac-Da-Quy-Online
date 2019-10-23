@@ -1,12 +1,11 @@
 const User = require('../models/User');
-const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const config = require('../../config');
+const config = require('../../config'); 
 
 exports.all_users_retrieve_get = (req, res, next) => {
     
     User.findAll()
-    .exec()
+    .execSelect()
     .then(results => {
         res.status(200).json({
             count: results.length,
@@ -22,7 +21,7 @@ exports.user_retrieve_get = (req, res, next) => {
 
     User.find({id: req.params.userID})
     .select('id username')
-    .exec()
+    .execSelect()
     .then(result => {
         res.status(200).json(result[0])
     })
@@ -33,57 +32,88 @@ exports.user_retrieve_get = (req, res, next) => {
     })
 }
 
-exports.user_login_post = (req, res, next) => {
-
+exports.Login_POST = (req, res, next) => {
     const {username, password} = req.body;
     
-    User.find({username: username})
-    .exec()
-    .then(results => {
-        // no result found
-        if (results.length == 0){
+    User.findOne({
+        where: {username: username},
+    })
+    .then(user => {
+        if (user && user.isPasswordCorrect(password)){
             res.status(200).json({
-                message: 'Username or password is incorrect'
+                user_id: user.id,
+                message: 'Login successfully'
             })
         }
         else{
-            bcrypt.compare(password, results[0].password, (err, same) => {
-                if (same){
-                    const token = jwt.sign(results[0], config.TOKEN_PRIVATE_KEY);
-                    res.status(200).json({
-                        message: 'Login successfully',
-                        token: token
-                    })
-                }
-                else{
-                    res.status(200).json({
-                        message: 'Username or password is incorrect'
-                    })
-                }
+            res.status(200).json({
+                message: 'The username or password is incorrect'
             })
         }
     })
     .catch(err => {
         res.status(500).json(err);
     })
+    
 }
 
-exports.user_register_post = (req, res, next) => {
-    bcrypt.hash(req.body.password, 10, (err, encrypted) => {
-        const newUser = new User({
-            username: req.body.username,
-            password: encrypted
-        })
+exports.RegisterNewUser_POST = (req, res, next) => {
+    const {username, password} = req.body;
 
-        User.insert(newUser)
-        .then(results => {
-            res.status(201).json({
-                message: 'Create new user successfully'
-            })
+    if (!(username && password)){
+        res.status(200).json({
+            message: 'Create new user failed'
+        })
+    }
+    else{
+        User.findOne({
+            where: {username: username}
+        })
+        .then(user => {
+            if (user){
+                res.status(200).json({
+                    message: 'The username already exists'
+                })
+            }
+            else{
+                User.create({
+                    username: username,
+                    password: password
+                })
+                .then(user => {
+                    if (user){
+                        res.status(200).json({
+                            user_id: user.id,
+                            message: 'Create new user successfully'
+                        })
+                    }
+                    else{
+                        res.status(200).json({
+                            message: 'Create new user failed'
+                        })
+                    }
+                }) 
+            }
         })
         .catch(err => {
             res.status(500).json(err);
         })
+    }
+}
+
+exports.user_delete = (req, res, next) => {
+    const id = req.params.userID;
+
+    User.delete({id: id})
+    .then(result => {
+        console.log(result);
+        res.status(200).json({
+            affectedCount: result.afftectedRows,
+            message: 'Delete successfully'
+        });
+    })
+    .catch(err => {
+        res.status(500).json(err);
     })
 }
 
