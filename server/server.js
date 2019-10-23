@@ -1,7 +1,9 @@
 const app = require('./src/app');
 const db = require('./src/models/DBInterface');
+const migrateDB = require('./src/models/MigrateDB');
 
 db.connectDatabase();
+migrateDB.migrateUser();
 
 
 app.listen(3000, () => {

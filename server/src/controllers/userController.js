@@ -2,14 +2,14 @@ const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const config = require('../../config'); 
 
-exports.all_users_retrieve_get = (req, res, next) => {
-    
-    User.findAll()
-    .execSelect()
-    .then(results => {
+exports.GetAllUsers_GET = (req, res, next) => {
+    User.findAll({
+        attributes: ['id', 'username']
+    })
+    .then(users => {
         res.status(200).json({
-            count: results.length,
-            users: results
+            user_count: users.length,
+            users: users
         })
     })
     .catch(err => {
@@ -17,19 +17,24 @@ exports.all_users_retrieve_get = (req, res, next) => {
     })
 }
 
-exports.user_retrieve_get = (req, res, next) => {
-
-    User.find({id: req.params.userID})
-    .select('id username')
-    .execSelect()
-    .then(result => {
-        res.status(200).json(result[0])
+exports.GetUser_GET = (req, res, next) => {
+    User.findOne({
+        attributes: ['id', 'username'],
+        where: {id: req.params.user_id},
+    })
+    .then(user => {
+        if (user){
+            res.status(200).json(user);
+        }
+        else{
+            res.status(200).json({
+                message: 'User not found'
+            })
+        }
     })
     .catch(err => {
-        res.status(500).json({
-            err: err
-        })
-    })
+        res.status(500).json(err)
+    });
 }
 
 exports.Login_POST = (req, res, next) => {
@@ -54,7 +59,6 @@ exports.Login_POST = (req, res, next) => {
     .catch(err => {
         res.status(500).json(err);
     })
-    
 }
 
 exports.RegisterNewUser_POST = (req, res, next) => {
@@ -101,16 +105,22 @@ exports.RegisterNewUser_POST = (req, res, next) => {
     }
 }
 
-exports.user_delete = (req, res, next) => {
-    const id = req.params.userID;
-
-    User.delete({id: id})
-    .then(result => {
-        console.log(result);
-        res.status(200).json({
-            affectedCount: result.afftectedRows,
-            message: 'Delete successfully'
-        });
+exports.DeleteUser_POST = (req, res, next) => {
+    const userID = req.params.user_id;
+    User.destroy({
+        where: {id: userID}
+    })
+    .then(number => {
+        if (number == 0){
+            res.status(200).json({
+                message: 'No user found'
+            })
+        }
+        else{
+            res.status(200).json({
+                message: 'User deleted!'
+            })
+        }
     })
     .catch(err => {
         res.status(500).json(err);

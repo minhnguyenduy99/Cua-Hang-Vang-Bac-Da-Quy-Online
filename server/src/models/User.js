@@ -25,10 +25,7 @@ User.init({
     username: {
         type: sequelize.STRING,
         allowNull: false,
-        unique: true,        
-        get(){
-            return () => this.getDataValue('username');
-        }
+        unique: true,
     },
     password: {
         type: sequelize.STRING,

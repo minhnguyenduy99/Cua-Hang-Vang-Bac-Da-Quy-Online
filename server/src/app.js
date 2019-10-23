@@ -4,6 +4,8 @@ const bodyParser = require('body-parser');
 const morgan = require('morgan');
 
 const userRoute = require('./routes/api/users');
+const loginRoute = require('./routes/login');
+
 const session = require('express-session');
 
 
@@ -38,6 +40,7 @@ app.get('/', (req, res, next) => {
 })
 
 app.use('/users', userRoute);
+app.use('/login', loginRoute);
 
 // error handles
 app.use((req, res, next) => {

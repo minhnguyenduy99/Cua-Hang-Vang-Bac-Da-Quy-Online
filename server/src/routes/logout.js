@@ -4,7 +4,7 @@ const express = require('express');
 const router = express.Router();
 
 
-router.post('/', mwSession.user_session_destroy, (req, res, next) => {
+router.post('/', (req, res, next) => {
     res.redirect('/');
 })
 
