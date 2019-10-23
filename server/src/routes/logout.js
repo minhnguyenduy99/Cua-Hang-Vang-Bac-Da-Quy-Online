@@ -5,7 +5,9 @@ const router = express.Router();
 
 
 router.post('/', (req, res, next) => {
-    res.redirect('/');
+    res.status(200).json({
+        message: 'Log out'
+    })
 })
 
 module.exports = router;

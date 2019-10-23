@@ -127,6 +127,22 @@ exports.DeleteUser_POST = (req, res, next) => {
     })
 }
 
+exports.user_delete = (req, res, next) => {
+    const id = req.params.userID;
+
+    User.delete({id: id})
+    .then(result => {
+        console.log(result);
+        res.status(200).json({
+            affectedCount: result.afftectedRows,
+            message: 'Delete successfully'
+        });
+    })
+    .catch(err => {
+        res.status(500).json(err);
+    })
+}
+
 
 
 
