@@ -2,18 +2,45 @@ const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
+const passport = require('passport');
+const session = require('express-session');
 
-const userRoute = require('./routes/api/users');
+const accountRoute = require('./routes/api/accounts');
+const sanphamRoute = require('./routes/api/sanphams');
 const loginRoute = require('./routes/login');
+const logoutRoute = require('./routes/logout');
+const passportConfig = require('./config/passport');
+
+const authChecker = require('./middlewares/authenticate-checker');
+
+// config session
+app.use(session({
+    secret: 'vbdq_session',
+    saveUninitialized: false,
+}))
+
 
 // middlewares
 app.use(bodyParser.urlencoded({extended : false}));
 app.use(bodyParser.json());
 app.use(morgan('dev'));
+app.use(passport.initialize());
+app.use(passport.session());
 
+// config passport for authentication request
+passportConfig(passport);
 
-app.use('/users', userRoute);
+// route handles
+app.use('/accounts', accountRoute);
+app.use('/sanphams', sanphamRoute);
 app.use('/login', loginRoute);
+app.use('/logout', logoutRoute)
+
+app.get('/', authChecker.isUserLoggedIn, (req, res) => {
+    res.status(200).json({
+        message: 'automatically login'
+    })
+})
 
 
 
@@ -28,7 +55,7 @@ app.use((err, req, res, next) => {
     res.status(err.status || 500);
 
     res.json({
-        message: err.message
+        error: err.message
     })
 })
 
