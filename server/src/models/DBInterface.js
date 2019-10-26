@@ -9,12 +9,16 @@ const sequelize = new Sequelize(config.database, config.user, config.password, {
 
 module.exports = class DBInterface{
     static connectDatabase(){
-        sequelize.authenticate()
-        .then(() => {
-            console.log('Connect database successfully');
-        })    
-        .catch(err => {
-            console.error('Connect database failed: ', err);
+        return new Promise((resolve, reject) => {
+            sequelize.authenticate()
+                .then(() => {
+                    console.log('Connect database successfully');
+                    resolve();
+                })    
+                .catch(err => {
+                    console.error('Connect database failed: ', err)
+                    reject(err);
+                })
         })
     }
     
