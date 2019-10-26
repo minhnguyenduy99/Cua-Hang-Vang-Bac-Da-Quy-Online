@@ -10,7 +10,8 @@ exports.Mapping_SanPham = (req, res, next) => {
         AnhDaiDien: req.body.sp_anhdaidien,
         TieuChuan: req.body.sp_tieuchuan,   
         KhoiLuong: req.body.sp_khoiluong,
-        GhiChu: req.body.sp_ghichu
+        GhiChu: req.body.sp_ghichu,
+        ID_LSP: req.body.lsp_id
     }
     req.body.sanPham = sanPham;
     next();

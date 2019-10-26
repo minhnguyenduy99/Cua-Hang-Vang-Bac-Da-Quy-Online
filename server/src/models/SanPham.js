@@ -5,7 +5,7 @@ const validator = require('../helpers/data-validator');
 const sequelize = require('sequelize');
 const Model = sequelize.Model;
 const sqlInstance = require('./DBInterface').getSequelizeInstance();
-
+const LoaiSanPham = require('./LoaiSanPham');
 
 class SanPham extends Model{
     static fullTextSearch(text){
@@ -128,6 +128,15 @@ SanPham.init({
     GhiChu: {
         type: sequelize.TEXT,
         allowNull: true,
+    },
+    ID_LSP: {
+        type: sequelize.INTEGER,
+        allowNull: true,
+        defaultValue: null,
+        references: {
+            model: LoaiSanPham,
+            key: 'ID_LSP',
+        }
     }
 },
 {
@@ -142,6 +151,14 @@ SanPham.init({
     ]
 })
 
-
+SanPham.belongsTo(LoaiSanPham, {
+    foreignKey: {
+        allowNull: true,
+        name: 'ID_LSP',
+        defaultValue: null
+    },
+    targetKey: 'ID_LSP',
+    foreignKeyConstraint: false
+})
 
 module.exports = SanPham;
