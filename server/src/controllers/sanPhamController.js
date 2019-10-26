@@ -79,5 +79,10 @@ module.exports.XoaSanPham_DELETE = (req, res, next) => {
                 }
             })
         }
+        else{
+            res.status(200).json({
+                message: 'The product not found'
+            })
+        }
     })
 }

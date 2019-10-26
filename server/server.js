@@ -3,7 +3,7 @@ const db = require('./src/models/DBInterface');
 const migrateDB = require('./src/models/MigrateDB');
 
 db.connectDatabase();
-migrateDB.migrate('SanPham');
+//migrateDB.migrate('SanPham');
 
 
 app.listen(3000, () => {

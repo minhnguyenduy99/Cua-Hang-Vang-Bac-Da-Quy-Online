@@ -30,7 +30,7 @@ class SanPham extends Model{
                     imageFile);
                 fs.unlink(filePath, err => {
                     if (err){
-                        console.log(err);
+                        return Promise.reject('Cannot delete the image file');
                     }
                 })                
             }

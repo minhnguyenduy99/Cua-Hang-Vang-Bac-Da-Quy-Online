@@ -28,7 +28,12 @@ class Account extends Model{
                         password: password
                     })
                     .then(newAccount => {
-                        resolve(newAccount);
+                        if (newAccount){
+                            resolve({account: newAccount, message: 'Register account successfully'});
+                        }
+                        else{
+                            resolve({account: null, message: 'Register account failed'});
+                        }
                     })
                     .catch(err => reject(err));
                 })

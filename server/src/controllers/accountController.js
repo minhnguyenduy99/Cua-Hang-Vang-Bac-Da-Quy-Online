@@ -71,16 +71,16 @@ exports.RegisterNewAccount_POST = (req, res, next) => {
     }
     else{
         Account.register(username, password)
-        .then(account => {
-            if (account){
+        .then(result => {
+            if (result.account){
                 res.status(201).json({
-                    account_id: account.id,
-                    message: 'Register new account successfully'
+                    account_id: result.account.id,
+                    message: result.message
                 })
             }
             else{
                 res.status(200).json({
-                    mesage: 'Create new account failed'
+                    mesage: result.message
                 })
             }
         })
@@ -89,9 +89,9 @@ exports.RegisterNewAccount_POST = (req, res, next) => {
 }
 
 exports.DeleteAccount_POST = (req, res, next) => {
-    const AccountID = req.params.Account_id;
+    const accountID = req.params.account_id;
     Account.destroy({
-        where: {id: AccountID}
+        where: {id: accountID}
     })
     .then(number => {
         if (number == 0){
