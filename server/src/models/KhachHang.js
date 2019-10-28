@@ -89,7 +89,7 @@ KhachHang.init({
     GioiTinh: {
         type: sequelize.STRING(8),
         set: (value) => {
-            return value.toUpperCase();
+            this.setDataValue('GioiTinh', value.toUpperCase());
         },
         validate: {
             isIn: ['NAM', 'NU', 'KHONGRO']
