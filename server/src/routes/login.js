@@ -10,7 +10,7 @@ router.get('/', (req, res) => {
 })
 
 router.post('/', (req, res, next) => {
-    passport.authenticate('user-login', (err, user, info) => {
+    passport.authenticate('account-login', (err, user, info) => {
         if (err){
             return next(err);
         }

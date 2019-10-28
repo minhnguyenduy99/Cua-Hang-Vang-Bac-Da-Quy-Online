@@ -1,4 +1,5 @@
 const Account = require('../models/Account');
+const responser = require('./baseController');
 const jwt = require('jsonwebtoken');
 const config = require('../config/serverConfig'); 
 
@@ -7,13 +8,10 @@ exports.GetAllAccounts_GET = (req, res, next) => {
         attributes: ['id', 'username']
     })
     .then(listAccounts => {
-        res.status(200).json({
-            account_count: listAccounts.length,
-            account_list: listAccounts
-        })
+        next(responser.getRetrieveRespone({ data: listAccounts }));
     })
     .catch(err => {
-        res.status(500).json(err);
+        next(responser.getErrorRespone({ err: err }));
     })
 }
 
@@ -24,67 +22,32 @@ exports.GetAccount_GET = (req, res, next) => {
     })
     .then(account => {
         if (account){
-            res.status(200).json(account);
+            next(responser.getRetrieveRespone({ data: account }));
         }
         else{
-            res.status(200).json({
-                message: 'account not found'
-            })
+            next(responser.getErrorRespone({ err: 'Không tìm thấy tài khoản' }));
         }
     })
     .catch(err => {
-        res.status(500).json(err)
+        next(responser.getErrorRespone({ err: err }));
     });
-}
-
-exports.Login_POST = (req, res, next) => {
-    const {username, password} = req.body;
-    
-    Account.findOne({
-        where: {username: username},
-    })
-    .then(account => {
-        if (account && account.isPasswordCorrect(password)){
-            res.status(200).json({
-                account_id: account.id,
-                message: 'Login successfully'
-            })
-        }
-        else{
-            res.status(200).json({
-                message: 'The Accountname or password is incorrect'
-            })
-        }
-    })
-    .catch(err => {
-        res.status(500).json(err);
-    })
 }
 
 exports.RegisterNewAccount_POST = (req, res, next) => {
     const {username, password} = req.body;
 
     if (!(username && password)){
-        res.status(200).json({
-            message: 'Create new Account failed'
-        })
+        next(responser.getErrorRespone({ err: 'Tài khoản hoặc mật khẩu không hợp lệ' }));
     }
     else{
         Account.register(username, password)
         .then(result => {
-            if (result.account){
-                res.status(201).json({
-                    account_id: result.account.id,
-                    message: result.message
-                })
-            }
-            else{
-                res.status(200).json({
-                    mesage: result.message
-                })
-            }
+            var statusCode = 200;
+            if (result.account)
+                statusCode = 201;
+            next(responser.getRetrieveRespone({ statusCode: statusCode, data: result.account, message: result.message }));
         })
-        .catch(err => res.status(500).json(err));
+        .catch(err => responser.getErrorRespone({ err: err }));
     }
 }
 
@@ -95,18 +58,14 @@ exports.DeleteAccount_POST = (req, res, next) => {
     })
     .then(number => {
         if (number == 0){
-            res.status(200).json({
-                message: 'No account found'
-            })
+            next(responser.getErrorRespone({ statusCode: 400, err: 'Không tìm thấy tài khoản' }));
         }
         else{
-            res.status(200).json({
-                message: 'Account deleted!'
-            })
+            next(responser.getDeleteRespone({ message: 'Xóa tài khoản thành công' }));
         }
     })
     .catch(err => {
-        res.status(500).json(err);
+        next(responser.getErrorRespone({ err: err }));
     })
 }
 

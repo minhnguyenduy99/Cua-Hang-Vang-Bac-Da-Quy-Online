@@ -4,6 +4,7 @@ var prototype = {}
 prototype.Account = require('./Account');
 prototype.SanPham = require('./SanPham');
 prototype.LoaiSanPham = require('./LoaiSanPham');
+prototype.KhachHang = require('./KhachHang');
 
 
 exports.dropModels = function(...modelNames){

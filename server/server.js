@@ -4,9 +4,9 @@ const migrateDB = require('./src/models/MigrateDB');
 
 db.connectDatabase()
     .then(() => {
-        // migrateDB.dropModels('SanPham', 'LoaiSanPham')
+        // migrateDB.dropModels('KhachHang')
         // .then(() => {
-        //     migrateDB.createModels('LoaiSanPham', 'SanPham')
+        //     migrateDB.createModels('KhachHang')
         // })
     })
     .catch(err => console.log(err));

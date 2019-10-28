@@ -2,6 +2,7 @@ const multer = require('multer');
 const path = require('path');
 const publicFolderPath = require('../config/serverConfig').publicFolderPath;
 const fs = require('fs');
+const encryptor = require('../helpers/encryptor');
 
 const imageSubPath = path.join(publicFolderPath, '/images');
 
@@ -30,8 +31,8 @@ const initStorage = (folderName, writeToField) => {
     })
 }
 
-module.exports.productImageUploader = (writeToField) => {
-    const imageStorage = initStorage('sanpham', writeToField);
+module.exports.imageUploader = (folderName, writeToField) => {
+    const imageStorage = initStorage(folderName, writeToField);
     return multer({
         storage: imageStorage, 
         fileFilter: (req, file, cb) => {

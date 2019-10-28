@@ -1,13 +1,14 @@
 const SanPham = require('../models/SanPham');
+const responser = require('./baseController');
 
-module.exports.GetToanBoSanPham_GET = (req, res) => {
+module.exports.GetToanBoSanPham_GET = (req, res, next) => {
     SanPham.findAll()
     .then(listSanPham => {
-        res.status(200).json({
-            count: listSanPham.length,
-            list_SanPham: listSanPham
-        })
+        next(responser.getRetrieveRespone({ data: listSanPham }));
     })
+    .catch(err => 
+        next(responser.getErrorRespone({ err: err }))
+    );
 }
 
 module.exports.GetSanPham_GET = (req, res) => {
@@ -28,32 +29,17 @@ module.exports.GetSanPham_GET = (req, res) => {
 }
 
 module.exports.ThemSanPham_POST = (req, res, next) => {
-    // const sanPham = {
-    //     Ten: req.body.sp_ten,
-    //     GiaNhap: req.body.sp_gianhap,
-    //     GiaBan: req.body.sp_giaban,
-    //     GiaGiaCong: req.body.sp_giagiacong,
-    //     GiaCam: req.body.sp_giacam,
-    //     AnhDaiDien: req.body.sp_anhdaidien,
-    //     TieuChuan: req.body.sp_tieuchuan,   
-    //     KhoiLuong: req.body.sp_khoiluong,
-    //     GhiChu: req.body.sp_ghichu
-    // }
     SanPham.create(req.body.sanPham)
     .then(sanPham => {
         if (sanPham){
-            res.status(201).json({
-                message: 'Create new product successfully'
-            })
+            next(responser.getCreatedRespone({ data: sanPham, message: 'Tạo sản phẩm mới thành công' }));
         }
         else{
-            res.status(200).json({
-                message: 'Create product failed'
-            })
+            next(responser.getErrorRespone({ err: 'Tạo sản phẩm thất bại' }));
         }
     })
     .catch(err => {
-        res.status(500).json(err);
+        next(responser.getErrorRespone({ err: err, data: null }));
     })
 }
 
@@ -66,23 +52,15 @@ module.exports.XoaSanPham_DELETE = (req, res, next) => {
     .then(sanPham => {
         if (sanPham){
             sanPham.delete()
-            .then(number => {
-                if (number > 0){
-                    res.status(200).json({
-                        message: 'Delete product successfully'
-                    })
-                }
-                else{
-                    res.status(200).json({
-                        message: 'Delete product failed'
-                    })
-                }
+            .then(success => {
+                next(responser.getDeleteRespone({ message: 'Xóa sản phẩm thành công'}));
             })
         }
         else{
-            res.status(200).json({
-                message: 'The product not found'
-            })
+            next(responser.getErrorRespone({ statusCode: 400, err: 'Không tìm thấy sản phẩm' }));
         }
+    })
+    .catch(err => {
+        next(responser.getErrorRespone({ err: err }));
     })
 }

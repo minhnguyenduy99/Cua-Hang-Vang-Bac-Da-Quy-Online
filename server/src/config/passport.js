@@ -4,7 +4,7 @@ const Account = require('../models/Account');
 
 module.exports = (passport) => {
 
-    passport.use('user-login', new LocalStrategy(
+    passport.use('account-login', new LocalStrategy(
         (username, password, done) => {
             Account.findOne({
                 where: {username: username}

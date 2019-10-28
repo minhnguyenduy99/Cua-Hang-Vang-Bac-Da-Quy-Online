@@ -8,6 +8,7 @@ const session = require('express-session');
 const accountRoute = require('./routes/api/accounts');
 const sanphamRoute = require('./routes/api/sanphams');
 const loaisanphamRoute = require('./routes/api/loaisanphams');
+const khachhangRoute = require('./routes/api/khachhangs');
 const loginRoute = require('./routes/login');
 const logoutRoute = require('./routes/logout');
 const passportConfig = require('./config/passport');
@@ -35,6 +36,7 @@ passportConfig(passport);
 app.use('/accounts', accountRoute);
 app.use('/sanphams', sanphamRoute);
 app.use('/loaisanphams', loaisanphamRoute);
+app.use('/khachhangs', khachhangRoute);
 app.use('/login', loginRoute);
 app.use('/logout', logoutRoute)
 

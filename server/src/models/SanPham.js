@@ -34,7 +34,7 @@ class SanPham extends Model{
                     }
                 })                
             }
-            return Promise.resolve(number);
+            return Promise.resolve(number == 0 ? false : true);
         })
     }
 }
