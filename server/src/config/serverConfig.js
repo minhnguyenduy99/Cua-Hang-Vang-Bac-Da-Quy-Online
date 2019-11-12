@@ -1,6 +1,6 @@
 const path = require('path');
 
-module.exports = {
+var serverConfig = {
     
     dbConnectConfig: {
         host: 'remotemysql.com',
@@ -12,5 +12,17 @@ module.exports = {
 
     publicFolderPath: path.resolve(__dirname, '../../public/'),
 
+    storage: {
+        images: {
+            getPath: (modelName) => getImageStoragePath(modelName)
+        }
+    },
+
     TOKEN_PRIVATE_KEY: 'SECRET_KEY'
 }
+
+function getImageStoragePath(modelName){
+    return path.join(serverConfig.publicFolderPath, 'images', modelName);
+}
+
+module.exports = serverConfig;
