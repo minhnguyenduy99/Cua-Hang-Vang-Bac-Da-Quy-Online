@@ -9,6 +9,9 @@ const accountRoute = require('./routes/api/accounts');
 const sanphamRoute = require('./routes/api/sanphams');
 const loaisanphamRoute = require('./routes/api/loaisanphams');
 const khachhangRoute = require('./routes/api/khachhangs');
+const nhanvienRoute = require('./routes/api/nhanviens');
+const loaiNVRoute = require('./routes/api/loainhanviens');
+const hoadonRoute = require('./routes/api/hoadons');
 const loginRoute = require('./routes/login');
 const logoutRoute = require('./routes/logout');
 const passportConfig = require('./config/passport');
@@ -37,13 +40,21 @@ app.use('/accounts', accountRoute);
 app.use('/sanphams', sanphamRoute);
 app.use('/loaisanphams', loaisanphamRoute);
 app.use('/khachhangs', khachhangRoute);
+app.use('/nhanviens', nhanvienRoute);
+app.use('/loainhanviens', loaiNVRoute);
+app.use('/hoadons', hoadonRoute);
 app.use('/login', loginRoute);
 app.use('/logout', logoutRoute)
 
 app.get('/', authChecker.isUserLoggedIn, (req, res) => {
-    res.status(200).json({
-        message: 'automatically login'
-    })
+    if (req.user_logined){
+        res.status(200).json({
+            message: 'automatically login'
+        })
+    }
+    else{
+        res.redirect('/login');
+    }
 })
 
 
