@@ -1,13 +1,130 @@
 const path = require('path');
 const fs = require('fs');
 const uuid = require('uuid');
-const validator = require('../helpers/data-validator');
 const sequelize = require('sequelize');
 const Model = sequelize.Model;
 const sqlInstance = require('./DBInterface').getSequelizeInstance();
+const appValidator = require('../config/application-config').dataValidator;
 const LoaiSanPham = require('./LoaiSanPham');
 
+
 class SanPham extends Model{
+
+    static initModel(){
+        SanPham.init({
+            IDSanPham: {
+                type: sequelize.UUID,
+                primaryKey: true,
+                defaultValue: () => {
+                    return uuid();
+                }
+            },
+            Ten: {
+                type: sequelize.STRING,
+                allowNull: false,
+            },
+            SoLuong: {
+                type: sequelize.INTEGER,
+                allowNull: false,
+                defaultValue: 0,
+                validate: {
+                    is: appValidator.SoLuong
+                }
+            },
+            GiaNhap: {
+                type: sequelize.INTEGER,
+                allowNull: false,
+                defaultValue: 0,
+                validate: {
+                    is: /^[0-9]*00$/,
+                    is200Odd(value){
+                        if (value % 200 != 0){
+                            throw new Error('The price must be a division of 200');
+                        }
+                    }
+                }
+            },
+            GiaBan: {
+                type: sequelize.INTEGER,
+                allowNull: false,
+                validate: {
+                    is: /^[0-9]*00$/,
+                    is200Odd(value){
+                        if (value % 200 != 0){
+                            throw new Error('The price must be a division of 200');
+                        }
+                    }
+                }
+            },
+            GiaCam: {
+                type: sequelize.INTEGER,
+                allowNull: false,
+                defaultValue: 0,
+                validate: {
+                    is: /^[0-9]*00$/,
+                    is200Odd(value){
+                        if (value % 200 != 0){
+                            throw new Error('The price must be a division of 200');
+                        }
+                    }
+                }
+            },
+            GiaGiaCong: {
+                type: sequelize.INTEGER,
+                allowNull: false,
+                defaultValue: 0,
+                validate: {
+                    is: /^[0-9]*00$/,
+                    is200Odd(value){
+                        if (value % 200 != 0){
+                            throw new Error('The price must be a division of 200');
+                        }
+                    }
+                }
+            },
+            AnhDaiDien: {
+                type: sequelize.STRING,
+                defaultValue: '',
+            },
+            TieuChuan: {
+                type: sequelize.STRING,
+                allowNull: true,
+            },
+            KhoiLuong: {
+                type: sequelize.FLOAT,
+                allowNull: false,
+                validate: {
+                    is: /^[0-9]*.?[0-9]{0,2}$/
+                }
+            },
+            GhiChu: {
+                type: sequelize.TEXT,
+                allowNull: true,
+            },
+        },
+        {
+            tableName: 'SanPham',
+            sequelize: sqlInstance,
+            timestamps: false,
+            indexes: [
+                {
+                    fields: ['Ten'],
+                    type: 'FULLTEXT'
+                }
+            ]
+        })
+    }
+
+    static associateModels(){
+        SanPham.belongsTo(LoaiSanPham, {
+            foreignKey: {
+                allowNull: true,
+                name: 'ID_LSP',
+                defaultValue: null
+            },
+        })
+    }
+
     static fullTextSearch(text){
         return sqlInstance.query('SELECT * FROM users WHERE MATCH(Ten) AGAINST (\'?\' IN NATURAL LANGUAGE MODE)', {
             replacements: [text],
@@ -38,127 +155,5 @@ class SanPham extends Model{
         })
     }
 }
-
-SanPham.init({
-    IDSanPham: {
-        type: sequelize.UUID,
-        primaryKey: true,
-        defaultValue: function(){
-            return uuid();
-        }
-    },
-    Ten: {
-        type: sequelize.STRING,
-        allowNull: false,
-    },
-    SoLuong: {
-        type: sequelize.INTEGER,
-        allowNull: false,
-        defaultValue: 0,
-        validate: {
-            is: /^[0-9]*$/
-        }
-    },
-    GiaNhap: {
-        type: sequelize.INTEGER,
-        allowNull: false,
-        defaultValue: 0,
-        validate: {
-            is: /^[0-9]*00$/,
-            is200Odd(value){
-                if (value % 200 != 0){
-                    throw new Error('The price must be a division of 200');
-                }
-            }
-        }
-    },
-    GiaBan: {
-        type: sequelize.INTEGER,
-        allowNull: false,
-        validate: {
-            is: /^[0-9]*00$/,
-            is200Odd(value){
-                if (value % 200 != 0){
-                    throw new Error('The price must be a division of 200');
-                }
-            }
-        }
-    },
-    GiaCam: {
-        type: sequelize.INTEGER,
-        allowNull: false,
-        defaultValue: 0,
-        validate: {
-            is: /^[0-9]*00$/,
-            is200Odd(value){
-                if (value % 200 != 0){
-                    throw new Error('The price must be a division of 200');
-                }
-            }
-        }
-    },
-    GiaGiaCong: {
-        type: sequelize.INTEGER,
-        allowNull: false,
-        defaultValue: 0,
-        validate: {
-            is: /^[0-9]*00$/,
-            is200Odd(value){
-                if (value % 200 != 0){
-                    throw new Error('The price must be a division of 200');
-                }
-            }
-        }
-    },
-    AnhDaiDien: {
-        type: sequelize.STRING,
-        defaultValue: '',
-    },
-    TieuChuan: {
-        type: sequelize.STRING,
-        allowNull: true,
-    },
-    KhoiLuong: {
-        type: sequelize.FLOAT,
-        allowNull: false,
-        validate: {
-            is: /^[0-9]*.?[0-9]{0,2}$/
-        }
-    },
-    GhiChu: {
-        type: sequelize.TEXT,
-        allowNull: true,
-    },
-    ID_LSP: {
-        type: sequelize.INTEGER,
-        allowNull: true,
-        defaultValue: null,
-        references: {
-            model: LoaiSanPham,
-            key: 'ID_LSP',
-        }
-    }
-},
-{
-    modelName: 'SanPham',
-    sequelize: sqlInstance,
-    timestamps: false,
-    indexes: [
-        {
-            fields: ['Ten'],
-            type: 'FULLTEXT'
-        }
-    ]
-})
-
-SanPham.belongsTo(LoaiSanPham, {
-    foreignKey: {
-        allowNull: true,
-        name: 'ID_LSP',
-        defaultValue: null
-    },
-    targetKey: 'ID_LSP',
-    foreignKeyConstraint: false
-})
 
 module.exports = SanPham;

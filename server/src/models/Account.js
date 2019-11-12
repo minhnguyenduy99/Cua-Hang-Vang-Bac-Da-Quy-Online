@@ -3,18 +3,71 @@ const uuid = require('uuid');
 const encryptor = require('../helpers/encryptor');
 const sequelize = require('sequelize');
 const Model = sequelize.Model;
+const appValidator = require('../config/application-config').dataValidator;
 
 const sqlizeInstance = DBInterface.getSequelizeInstance();
 
+const generateSaltAndPassword = (account) => {
+    if (account.changed('password')){
+        account.salt = encryptor.createSalt();
+        account.password = encryptor.encrypt(account.password, account.salt);
+    }
+}
+
 class Account extends Model{
 
-    isPasswordCorrect(enteredPassword){
-        return encryptor.encrypt(enteredPassword, this.salt()) === this.password();
+    static initModel(){
+        Account.init({
+            id: {
+                type: sequelize.UUID,
+                primaryKey: true,
+                allowNull: false,
+                defaultValue: function(){
+                    return uuid();
+                }
+            },
+            username: {
+                type: sequelize.STRING,
+                allowNull: false,
+                unique: true,
+                validate:{
+                    is: appValidator.Account
+                }
+            },
+            password: {
+                type: sequelize.STRING,
+                allowNull: false,
+                validate: {
+                    is: appValidator.Password
+                },
+                get(){
+                    return this.getDataValue('password');
+                }
+            },
+            salt: {
+                type: sequelize.STRING,
+                get(){
+                    return this.getDataValue('salt');
+                }
+            }
+        },
+        {
+            timestamps: false,
+            sequelize: sqlizeInstance,
+            tableName: 'Account'
+        })
+        
+        Account.beforeCreate(generateSaltAndPassword);
+        Account.beforeUpdate(generateSaltAndPassword);
     }
 
-    static register(username, password){
+    isPasswordCorrect(enteredPassword){
+        return encryptor.encrypt(enteredPassword, this.salt) === this.password;
+    }
+
+    static register(user , pw){
         return Account.findOne({
-            where: {username: username}
+            where: {username: user}
         })
         .then(account => {
             // the account already exists
@@ -24,8 +77,8 @@ class Account extends Model{
             else{
                 return new Promise((resolve, reject) => {
                     Account.create({
-                        username: username,
-                        password: password
+                        username: user,
+                        password: pw
                     })
                     .then(newAccount => {
                         if (newAccount){
@@ -40,63 +93,7 @@ class Account extends Model{
                 
             }
         })
-        .catch(err => {
-            return Promise.reject(err)
-        });
     }
 }
-
-Account.init({
-    id: {
-        type: sequelize.UUID,
-        primaryKey: true,
-        allowNull: false,
-        defaultValue: function(){
-            return uuid();
-        }
-    },
-    username: {
-        type: sequelize.STRING,
-        allowNull: false,
-        unique: true,
-        validate:{
-            notEmpty: true
-        }
-    },
-    password: {
-        type: sequelize.STRING,
-        allowNull: false,
-        validate: {
-            notEmpty: true
-        },
-        get(){
-            return () => this.getDataValue('password');
-        }
-    },
-    salt: {
-        type: sequelize.STRING,
-        get(){
-            return () => this.getDataValue('salt');
-        }
-    }
-},
-{
-    modelName: 'Account',
-    timestamps: false,
-    sequelize: sqlizeInstance
-})
-
-const generateSaltAndPassword = (account) => {
-    if (account.changed('password')){
-        account.salt = encryptor.createSalt();
-        account.password = encryptor.encrypt(account.password(), account.salt());
-    }
-}
-
-Account.beforeCreate(generateSaltAndPassword);
-Account.beforeUpdate(generateSaltAndPassword);
-
-
-//account.sync({force: true});
 
 module.exports = Account;

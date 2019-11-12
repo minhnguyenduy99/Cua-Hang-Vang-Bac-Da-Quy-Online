@@ -1,47 +1,33 @@
+const DBInterface = require('./DBInterface');
 const sequelize = require('sequelize');
 const uuid = require('uuid');
+const data_validator = require('../config/application-config').dataValidator;
+const op = sequelize.Op;
+const sqlInstance = DBInterface.getSequelizeInstance();
 const path = require('path');
-const dbInterface = require('./DBInterface');
-const sqlInstance = dbInterface.getSequelizeInstance();
-const Model = sequelize.Model;
-const appValidator = require('../config/application-config').dataValidator;
 
+const LoaiNhanVien = require('./LoaiNhanVien');
 const Account = require('./Account');
 const HoaDon = require('./HoaDon');
 
-class KhachHang extends Model{
-
+class NhanVien extends sequelize.Model{
     static initModel(){
-        KhachHang.init({
-            ID_KH: {
+        NhanVien.init({
+            ID_NV: {
                 type: sequelize.UUID,
                 primaryKey: true,
-                defaultValue: function() {
+                defaultValue: () => {
                     return uuid();
-                }
+                } 
             },
-            TenKH: {
-                type: sequelize.STRING(30),
+            HoTen: {
+                type: sequelize.STRING(50),
                 allowNull: false,
-            },
-            CMND: {
-                type: sequelize.STRING(13),
-                allowNull: false,
-                unique: true,
-                validate: {
-                    is: appValidator.CMND
-                },
             },
             NgaySinh: {
                 type: sequelize.DATEONLY,
-                allowNull: true,
+                allowNull: false,
                 validate: {
-                    greaterThan18YearsOld(value){
-                        const age = new Date().getFullYear() - value.getFullYear();
-                        if (age < 18){
-                            throw new Error('Phải từ 18 tuổi trở lên');
-                        }
-                    },
                     isYearNegative(value){
                         const year = value.getFullYear();
                         if (year <= 0){
@@ -62,20 +48,16 @@ class KhachHang extends Model{
                     }
                 }
             },
-            GioiTinh: {
-                type: sequelize.STRING(8),
-                set(value) {
-                    this.setDataValue('GioiTinh', value.toUpperCase());
-                },
+            CMND: {
+                type: sequelize.STRING(15),
                 validate: {
-                    isIn: appValidator.GioiTinh
+                    is: data_validator.CMND
                 }
             },
             SDT: {
-                type: sequelize.STRING(11),
-                allowNull: false,
+                type: sequelize.STRING,
                 validate: {
-                    is: appValidator.SDT,
+                    is: data_validator.SDT
                 }
             },
             DiaChi: {
@@ -83,32 +65,59 @@ class KhachHang extends Model{
                 allowNull: true,
             },
             AnhDaiDien: {
-                type: sequelize.STRING,
-                allowNull: false
+                type: sequelize.TEXT,
+                allowNull: true
             },
-            Account_ID: {
-                type: sequelize.UUID,
-                references: {
-                    key: 'id',
-                    model: Account,
-                },
+            NgayVaoLam: {
+                type: sequelize.DATEONLY,
                 allowNull: true,
-                defaultValue: null,
-            }
-        },{
-            tableName: 'KhachHang',
+                defaultValue: () => Date(),
+                validate: {
+                    isYearNegative(value){
+                        const year = value.getFullYear();
+                        if (year <= 0){
+                            throw new Error('Gía trị năm không hợp lệ');
+                        }
+                    }  
+                },
+                set(value){
+                    const castValue = new String(value);
+                    // Input is a string
+                    if (castValue instanceof String){
+                        const dateSplit = castValue.split('/');
+                        const dateCast = new Date(dateSplit[2], dateSplit[1] - 1, dateSplit[0]);
+                        this.setDataValue('NgayVaoLam', dateCast);
+                    }
+                    else{
+                        this.setDataValue('NgayVaoLam', value);
+                    }
+                }
+            },
+        }, {
+            tableName: 'NhanVien',
             timestamps: false,
-            sequelize: sqlInstance,
+            sequelize: sqlInstance
         })
     }
 
+    static async findNhanVienByID(id){
+        return NhanVien.findOne({
+            where: { ID_NV: id }
+        })
+        .then(nhanVien => {
+            return Promise.resolve(nhanVien);
+        })
+        .catch(err => {
+            return Promise.reject(err);
+        })
+    }
     delete(){
         const account_id = this.ACCOUNT_ID; 
         const imageFile = this.AnhDaiDien;
         // Khách hàng không có account
         return new Promise((resolve, reject) => {
-            KhachHang.destroy({
-                where: {ID_KH: this.ID_KH}
+            NhanVien.destroy({
+                where: {ID_NV: this.ID_NV}
             })
             .then(number => {
                 const success = number == 1;
@@ -116,7 +125,7 @@ class KhachHang extends Model{
                 if (number == 1){
                     const filePath = path.join(
                         require('../config/serverConfig').publicFolderPath,
-                        'images/khachhang',
+                        'images/nhanvien',
                         imageFile);
                     require('fs').unlink(filePath, err => {
                         console.log(err);
@@ -129,7 +138,4 @@ class KhachHang extends Model{
     }
 }
 
-
-
-
-module.exports = KhachHang;
+module.exports = NhanVien;
