@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const passport = require('passport');
+const sender = require('./api/response-sender');
 
 router.get('/', (req, res) => {
     // load login resources here
@@ -15,25 +16,31 @@ router.post('/', (req, res, next) => {
             return next(err);
         }
         if (!user){
-            return res.status(200).json({
-                message: info.message,
-            })
+            sender.authenticated(res, info.message);
         }
         if (req.body.remember){
             req.logIn(user, err => {
                 if (err){
                     return next(err);
                 }
-                return res.status(200).json({
+                sender.authenticated(res, {
                     message: info.message,
-                    user_id: user.id
+                    data: {
+                        session_saved: true,
+                        user_id: user.id
+                    }
                 })
             })
         }
-        return res.status(200).json({
-            message: info.message,
-            user_id: user.id
-        })
+        else{
+            sender.authenticated(res, {
+                message: info.message,
+                data: {
+                    session_saved: false,
+                    user_id: user.id
+                }
+            })
+        }
     })(req, res, next);
 });
 

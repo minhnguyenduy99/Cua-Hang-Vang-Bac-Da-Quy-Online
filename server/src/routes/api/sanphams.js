@@ -1,14 +1,16 @@
 const imageUploader = require('../../middlewares/file-uploader').imageUploader;
 const dataMapping = require('../../middlewares/data-mapping');
 const sanphamController = require('../../controllers/sanPhamController');
+const serverStorageConfig = require('../../config/serverConfig').storage;
+const sender = require('./response-sender');
 
-const sanphamFolder = 'sanpham';
+const storeFolder = 'sanpham';
 const field = 'sp_anhdaidien';
 
 const router = require('express').Router();
 
 router.post('/', 
-    imageUploader(sanphamFolder, field).single(field), 
+    imageUploader(storeFolder, field).single(field), 
     dataMapping.Mapping_SanPham, 
     sanphamController.ThemSanPham_POST, 
     (result, req, res, next) => {
@@ -16,12 +18,9 @@ router.post('/',
             require('fs').unlink(req.file.filename, err => {
                 console.log(err);
             })
-            return res.status(result.statusCode).json(result);
+            return sender.error(res, result);
         }
-        return res.status(result.statusCode).json({
-            message: result.message,
-            data: result.data.IDSanPham
-        })
+        return sender.created(res, result);
     });
 
 router.get('/', sanphamController.GetToanBoSanPham_GET, (result, req, res, next) => {

@@ -1,6 +1,7 @@
 const passport = require('passport');
 const express = require('express');
 const router = express.Router();
+const sender = require('./response-sender');
 
 const accountController = require('../../controllers/accountController');
 
@@ -17,7 +18,7 @@ router.get('/:account_id', accountController.GetAllAccounts_GET, (result, req, r
 });
 
 router.post('/register', accountController.RegisterNewAccount_POST, (result ,req, res, next) => {
-    return res.status(result.statusCode).json(result);
+    return sender.created(res, result);
 });
 
 router.delete('/:account_id', accountController.DeleteAccount_POST, (result, req, res, next) => {

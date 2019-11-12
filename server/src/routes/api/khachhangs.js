@@ -26,7 +26,7 @@ router.post('/register',
         }
         res.status(result.statusCode).json({
             message: result.message,
-            data: result.data.ID_KH
+            data: result.data
         })
     }
 );
