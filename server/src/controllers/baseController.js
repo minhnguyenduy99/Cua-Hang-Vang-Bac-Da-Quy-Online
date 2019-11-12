@@ -44,4 +44,8 @@ module.exports = class BaseController{
 
         return {statusCode, message, err, data};
     }
+
+    static sendErrorRespone(res, resResult){
+        return res.status(resResult.statusCode).json(resResult.err);
+    }
 }

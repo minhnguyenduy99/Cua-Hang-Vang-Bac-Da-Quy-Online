@@ -1,3 +1,4 @@
+const sequelize = require('sequelize');
 const Account = require('../models/Account');
 const responser = require('./baseController');
 const jwt = require('jsonwebtoken');
@@ -42,10 +43,17 @@ exports.RegisterNewAccount_POST = (req, res, next) => {
     else{
         Account.register(username, password)
         .then(result => {
-            var statusCode = 200;
-            if (result.account)
+            let statusCode = 200;
+            let data = null;
+            if (result.account){
                 statusCode = 201;
-            next(responser.getRetrieveRespone({ statusCode: statusCode, data: result.account, message: result.message }));
+                data = {
+                    user_id: result.account.id,
+                    username: result.account.username
+                }
+
+            }
+            next(responser.getRetrieveRespone({ statusCode: statusCode, data: data, message: result.message }));
         })
         .catch(err => responser.getErrorRespone({ err: err }));
     }
