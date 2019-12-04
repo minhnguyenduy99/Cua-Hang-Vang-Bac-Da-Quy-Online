@@ -1,104 +1,81 @@
-const sequelize = require('./DBInterface').getSequelizeInstance;
+const sequelize = require('./DBInterface').getSequelizeInstance();
 
-const Account = require('./Account');
-const KhachHang = require('./KhachHang');
-const LoaiNhanVien = require('./LoaiNhanVien');
-const NhanVien = require('./NhanVien');
-const LoaiSanPham = require('./LoaiSanPham');
-const SanPham = require('./SanPham');
-const HoaDon = require('./HoaDon');
-const ChiTietHoaDon = require('./ChiTietHoaDon');
+const TaiKhoan      = require('./TaiKhoan');
+const KhachHang     = require('./KhachHang');
+const NhanVien      = require('./NhanVien');
+const NhaCungCap    = require('./NhaCungCap');
+const SanPham       = require('./SanPham');
+const Phieu         = require('./Phieu');
+const LoaiPhieu     = require('./LoaiPhieu');
+const ChiTietPhieu  = require('./ChiTietPhieu');
+const PhieuCamDo    = require('./PhieuCamDo');
+const PhieuThuMua   = require('./PhieuThuMua');
+const ChiTietPhieuMuaHang = require('./ChiTietPhieuMuaHang');
+const CTPhieuCamDo  = require('./CTPhieuCamDo');
 
 module.exports = class ModelAssociator{
-    static Account_KhachHang(){
-        Account.hasOne(KhachHang, {
-            foreignKey: {
-                name: 'Account_ID',
-                allowNull: true
-            }
-        })
+
+    static TaiKhoan_KhachHang(){
     }
     
-    static Account_NhanVien(){
-        Account.hasOne(NhanVien, {
-            foreignKey: {
-                name: 'Account_ID',
-                allowNull: true
-            }
-        })
+    static TaiKhoan_NhanVien(){
     }
     
-    static SanPham_LoaiSanPham(){
-        SanPham.belongsTo(LoaiSanPham, {
-            foreignKey: {
-                name: 'ID_LSP',
-                allowNull: false,
-            }
-        })
-        LoaiSanPham.hasMany(SanPham, {
-            foreignKey: {
-                name: 'ID_LSP',
-                allowNull: false
-            }
-        });
+    static NhanVien_QuanLy(){
+    }
+
+    static NhaCungCap_SanPham(){
+    }
+
+    static Phieu_LoaiPhieu(){
     }
     
-    static NhanVien_LoaiNhanVien(){
-        LoaiNhanVien.hasMany(NhanVien, {
-            foreignKey: {
-                name: 'ID_LNV',
-                allowNull: false
-            }
-        });
+    static Phieu_NhanVien(){
     }
     
-    static HoaDon_NhanVien(){
-        HoaDon.belongsTo(NhanVien, {
-            foreignKey: {
-                name: 'ID_NV',
-                allowNull: false
-            }
-        })
-        NhanVien.hasMany(HoaDon, {
-            foreignKey: {
-                name: 'ID_NV',
-                allowNull: false
-            }
-        });
+    static Phieu_KhachHang(){
     }
     
-    static HoaDon_KhachHang(){
-        HoaDon.belongsTo(KhachHang, {
-            foreignKey: 'ID_KH',
-            allowNull: false
-        })
-        KhachHang.hasMany(HoaDon, {
-            foreignKey: {
-                name: 'ID_KH',
-                allowNull: false
-            }
-        });
+    static Phieu_SanPham(){
     }
-    
-    static HoaDon_SanPham(){
-        HoaDon.belongsToMany(SanPham, { 
-            through: ChiTietHoaDon,
-            as: 'listSanPham',
-            foreignKey: 'ID_HD',
-        });
-        SanPham.belongsToMany(HoaDon, { 
-            through: ChiTietHoaDon, 
-            foreignKey: 'ID_SP',
-        });
+
+    static CTPhieu_SanPham(){
+    }
+
+    static CTPhieu_Phieu(){
+    }
+
+    static Phieu_PhieuCamDo(){
+    }
+
+    static Phieu_PhieuThuMua(){
+    }
+
+    static Phieu_ChiTietPhieuMuaHang(){
+    }
+
+    static CTPhieuMuaHang_SanPham(){
+    }
+
+    static Phieu_Associations(){
     }
 
     static associateAll(){
-        this.Account_KhachHang();
-        this.Account_NhanVien();
-        this.NhanVien_LoaiNhanVien();
-        this.SanPham_LoaiSanPham();
-        this.HoaDon_KhachHang();
-        this.HoaDon_NhanVien();
-        this.HoaDon_SanPham();
+        //this.TaiKhoan_KhachHang();
+        //this.TaiKhoan_NhanVien();
+        //this.NhanVien_QuanLy();
+        //this.NhaCungCap_SanPham();
+        this.Phieu_LoaiPhieu();
+        //this.Phieu_KhachHang();
+        //this.Phieu_NhanVien();
+        this.Phieu_SanPham();
+        this.CTPhieu_Phieu();
+        this.CTPhieu_SanPham();
+
+        this.Phieu_PhieuCamDo();
+        this.Phieu_PhieuThuMua();
+        this.Phieu_ChiTietPhieuMuaHang();
+        this.CTPhieuMuaHang_SanPham();
+
     }
 }

@@ -1,7 +1,12 @@
-const express = require('express');
-const router = express.Router();
-const passport = require('passport');
-const sender = require('./api/response-sender');
+const express       = require('express');
+const router        = express.Router();
+const passport      = require('passport');
+const sender        = require('./api/response-sender');
+const ErrorHandler  = require('../middlewares/error-handler').ErrorHandler;
+const accesser      = require('../config/access-control');
+
+const { acl, getMappingRole } = accesser;
+
 
 router.get('/', (req, res) => {
     // load login resources here
@@ -11,36 +16,23 @@ router.get('/', (req, res) => {
 })
 
 router.post('/', (req, res, next) => {
-    passport.authenticate('account-login', (err, user, info) => {
+    passport.authenticate('user-login', (err, taikhoan, info) => {
         if (err){
             return next(err);
         }
-        if (!user){
-            sender.authenticated(res, info.message);
+        if (!taikhoan){
+            return sender.authenticated(res, {valid: false, data: null})
         }
-        if (req.body.remember){
-            req.logIn(user, err => {
+        if (req.body.nhomatkhau){
+            req.logIn(taikhoan, err => {
                 if (err){
-                    return next(err);
+                    next(err);
+                    return;
                 }
-                sender.authenticated(res, {
-                    message: info.message,
-                    data: {
-                        session_saved: true,
-                        user_id: user.id
-                    }
-                })
-            })
+            })    
         }
-        else{
-            sender.authenticated(res, {
-                message: info.message,
-                data: {
-                    session_saved: false,
-                    user_id: user.id
-                }
-            })
-        }
+        acl.addUserRoles(taikhoan.idtk, getMappingRole(taikhoan.loaitk));
+        return sender.authenticated(res, {data: taikhoan})
     })(req, res, next);
 });
 

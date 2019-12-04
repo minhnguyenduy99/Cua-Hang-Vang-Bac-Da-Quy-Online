@@ -1,75 +1,75 @@
 const responser = require('./baseController');
 const NhanVien = require('../models/NhanVien');
-
+const TaiKhoan = require('../models/TaiKhoan');
+const ImageManager = require('../models/ImageManager').getInstance();
+const ListChucVu = require('../config/application-config').AppGlobalRule.CHUC_VU;
+const ErrorHandler  = require('../middlewares/error-handler').ErrorHandler;
+const ChiTietLuong    = require('../models/ChiTietLuong')
 
 module.exports.GetAllNhanVien_GET = (req, res, next) => {
-    NhanVien.findAll()
+    NhanVien.findAllNhanVien()
     .then(listNhanVien => {
-        if (listNhanVien){
-            next(responser.getRetrieveRespone({ data: listNhanVien }));
-        }
-        else{
-            next(responser.getErrorRespone({ err: 'Retrieve failed' }));
-        }
+        req.result = responser.get({ data: listNhanVien });
+        next();
     })    
     .catch(err => {
-        next(responser.getErrorRespone({ err: err }));
-    })
+        next(err)
+    });
 }
 
 module.exports.CreateNewNhanVien_POST = (req, res, next) => {
-    const nhanVien = req.body.nhanVien;
-    NhanVien.create(nhanVien)
+    const chucvu = req.body.chucvu = parseInt(req.body.chucvu);
+
+    // Không tìm thấy chức vụ 
+    if (Object.values(ListChucVu).indexOf(chucvu) === -1){
+        const error = ErrorHandler.createError('invalid_value', { field: 'chucvu' })
+        next(error);
+        return;
+    }
+
+    TaiKhoan.register(req.body, chucvu)
     .then(newNhanVien => {
-        if (newNhanVien){
-            next(responser.getCreatedRespone({ data: newNhanVien, message: 'Tạo nhân viên thành công' }))
-        }
-        else{
-            next(responser.getErrorRespone({ message: 'Tạo nhân viên mới thất bại' }))
-        }
+        if (newNhanVien)
+            req.result = responser.created({ data: newNhanVien })
+        next();
     })
     .catch(err => {
-        next(responser.getErrorRespone({ err: err }));
-    })
+        ImageManager.deleteImage(NhanVien.name, req.body.anhdaidien);
+        next(err);
+    });
 }
 
-module.exports.GetNhanVien_GET = (req, res, next) => {
-    const id = req.params.id_nv;
+module.exports.GetNhanVien_IDNV = (req, res, next) => {
+    const id = req.params.nv_id;
 
     NhanVien.findNhanVienByID(id)
     .then(nhanVien => {
-        if (nhanVien)
-            next(responser.getRetrieveRespone({ data: nhanVien }));
-        else
-            next(responser.getRetrieveRespone({ message: 'Không tìm thấy nhân viên' }));
+        req.result = responser.get({ data: nhanVien });
+        next();
     })
-    .catch(err => {
-        next(responser.getErrorRespone({ err: err }));
-    })
+    .catch(err => next(err));
 }
 
-module.exports.DeleteNhanVien_DELETE = (req, res, next) => {
-    const ID_NV = req.params.nv_id;
-    NhanVien.findOne({
-        where: {ID_NV: ID_NV}
+module.exports.UpdateThongTinNhanVien_POST = (req, res, next) => {
+    const idnv = req.params.nv_id;
+
+    NhanVien.updateThongTin(idnv, req.body)
+    .then(success => {
+        req.result = responser.updated({ options: {success: success} });
+        next();
     })
-    .then(nhanVien => {
-        if (nhanVien){
-            nhanVien.delete()
-            .then(success => {
-                if (success){
-                    next(responser.getDeleteRespone({ message: 'Xóa nhân viên thành công' }))
-                }
-                else{
-                    next(responser.getErrorRespone({ message: 'Xóa nhân viên thất bại' }))
-                }
-            })
-        }
-        else{
-            next(responser.getRetrieveRespone({ message: 'Không tìm thấy id nhân viên' }))
-        }
+    .catch(err => next(err));
+}
+
+module.exports.GetThongTinLuong_GET = (req, res, next) => {
+    const idnv = req.params.nv_id;
+
+    NhanVien.getAllThongTinLuong(idnv)
+    .then(nhanvien => {
+        req.result = responser.get({ data: nhanvien });
+        next();
     })
     .catch(err => {
-        next(responser.getErrorRespone({ err: err }));
-    })
+        next(err);
+    });
 }

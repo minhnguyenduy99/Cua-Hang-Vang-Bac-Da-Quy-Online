@@ -1,66 +1,105 @@
-const SanPham = require('../models/SanPham');
-const responser = require('./baseController');
+const SanPham      = require('../models/SanPham');
+const responser    = require('./baseController');
+const ImageManager = require('../models/ImageManager').getInstance();
+const ErrorHandler = require('../middlewares/error-handler').ErrorHandler;
 
 module.exports.GetToanBoSanPham_GET = (req, res, next) => {
-    SanPham.findAll()
+    SanPham.findAllSanPham()
     .then(listSanPham => {
-        next(responser.getRetrieveRespone({ data: listSanPham }));
+        req.result = responser.get({ data: listSanPham });
+        next();
     })
-    .catch(err => 
-        next(responser.getErrorRespone({ err: err }))
-    );
+    .catch(err => next(err));
 }
 
-module.exports.GetSanPham_GET = (req, res) => {
-    const query = req.query;
-    if (!query || !query.search){
-        this.GetToanBoSanPham_GET(req, res);
-    }
-    else{
-        const textSearch = query.search;
-        SanPham.fullTextSearch(textSearch)
-        .then(listSanPham => {
-            res.status(200).json({
-                count: listSanPham.length,
-                list_sanPham: listSanPham
-            })
-        })
-    }
+module.exports.GetSanPham_ByID = (req, res, next) => {
+    const id = req.params.sp_id;
+
+    SanPham.findSanPhamByID(id)
+    .then(sanpham => {
+        req.result = responser.get({ data: sanpham });
+        next();
+    })
+    .catch(err => next(err));
+}
+
+module.exports.GetSanPham_BySearch_GET = (req, res, next) => {
+    const search = req.query.search;
+
+    SanPham.findBySearchPattern(search)
+    .then(listSanPham => {
+        req.result = responser.get({ data: listSanPham });
+        next();
+    })
+    .catch(err => next(err));
 }
 
 module.exports.ThemSanPham_POST = (req, res, next) => {
-    SanPham.create(req.body.sanPham)
+    SanPham.createSanPham(req.body)
     .then(sanPham => {
-        if (sanPham){
-            next(responser.getCreatedRespone({ data: sanPham, message: 'Tạo sản phẩm mới thành công' }));
-        }
-        else{
-            next(responser.getErrorRespone({ err: 'Tạo sản phẩm thất bại' }));
-        }
+        if (sanPham)
+            req.result = responser.created({ data: sanPham });
+        next();
     })
     .catch(err => {
-        next(responser.getErrorRespone({ err: err, data: null }));
+        ImageManager.deleteImage(SanPham.name, req.body.anhdaidien);
+        next(err);
     })
 }
 
 module.exports.XoaSanPham_DELETE = (req, res, next) => {
-    const sanPhamID = req.params.sanpham_id;
+    const sp_id = req.params.sp_id;
     
-    SanPham.findOne({
-        where: {IDSanPham: sanPhamID}
-    })
-    .then(sanPham => {
-        if (sanPham){
-            sanPham.delete()
-            .then(success => {
-                next(responser.getDeleteRespone({ message: 'Xóa sản phẩm thành công'}));
-            })
+    SanPham.delete(sp_id)
+    .then(({ success, listSanPham }) => {
+        if (success){
+            req.result = responser.deleted({ data: listSanPham });
+            next();
         }
         else{
-            next(responser.getErrorRespone({ statusCode: 400, err: 'Không tìm thấy sản phẩm' }));
+            const error = ErrorHandler.createError('rs_not_found');
+            next(error);
         }
     })
     .catch(err => {
-        next(responser.getErrorRespone({ err: err }));
-    })
+        next(responser.error({ code: 500 }))
+    });
 }
+
+module.exports.GetDeletedSanPham_GET = (req, res, next) => {
+    SanPham.findDeletedSanPham()
+    .then(listSanPham => {
+        req.result = responser.get({ data: listSanPham });
+        next();
+    })
+    .catch(err => next(err));
+}
+
+module.exports.RestoreSanPham_GET = (req, res, next) => {
+    const sp_id = req.params.sp_id;
+
+    SanPham.restoreOne(sp_id)
+    .then(sanpham => {
+        if (sanpham){
+            req.result = responser.get({ data: sanpham })
+            next();
+        }
+        else{
+            const error = ErrorHandler.createError('rs_not_found');
+            next(error);
+        }
+    })
+    .catch(err => next(err));
+}
+
+module.exports.UpdateSanPham_POST = (req, res, next) => {
+    const sp_id = req.params.sp_id;
+
+    SanPham.updateSanPham(sp_id, req.body)
+    .then(success => {
+        req.result = responser.updated({ options: {success: true} });
+        next();
+    })
+    .catch(err => next(err));
+}
+

@@ -1,36 +1,35 @@
-const nhanvienController = require('../../controllers/nhanvienController');
-const router = require('express').Router();
-const dataMapping = require('../../middlewares/data-mapping');
-const uploader = require('../../middlewares/file-uploader').imageUploader;
-const sender = require('./response-sender');
-const storeImageDir = 'nhanvien';
-const field = 'nv_anhdaidien';
+const nhanvienController    = require('../../controllers/nhanvienController');
+const router                = require('express').Router();
+const uploader              = require('../../middlewares/file-uploader').imageUploader;
+const sender                = require('./response-sender');
 
-router.get('/', nhanvienController.GetAllNhanVien_GET, (result, req, res, next) => {
-    return sender.get(res, result);
+const field                 = 'anhdaidien';
+
+router.get('/', nhanvienController.GetAllNhanVien_GET, (req, res, next) => {
+    sender.send(res, req.result);
 });
 
-router.get('/:id_nv', nhanvienController.GetNhanVien_GET, (result, req, res, next) => {
-    return sender.get(res, result);
+router.get('/:nv_id', nhanvienController.GetNhanVien_IDNV, (req, res, next) => {
+    sender.send(res, req.result);
 })
 
 router.post('/register', 
-    uploader(storeImageDir, field).single(field), 
-    dataMapping.Mapping_NhanVien, 
+    uploader('nhanvien', field).single(field), 
     nhanvienController.CreateNewNhanVien_POST,
-    (result, req, res, next) => {
-        if (result.err){
-            require('fs').unlink(req.file.path, err => {
-                console.log(err);
-            })
-        }
-        return sender.created(res, result);
+    (req, res, next) => {
+        sender.send(res, req.result);
     }
 );
 
-router.delete('/:nv_id', nhanvienController.DeleteNhanVien_DELETE, (result, req, res, next) => {
-    return sender.delete(res, result);
-});
+router.post('/:nv_id/update',
+    uploader('nhanvien', field).single(field),
+    nhanvienController.UpdateThongTinNhanVien_POST, (req, res, next) => {
+    sender.send(res, req.result);
+})
+
+router.get('/:nv_id/thongtinluongs', nhanvienController.GetThongTinLuong_GET, (req, res, next) => {
+    sender.send(res, req.result);
+})
 
 
 

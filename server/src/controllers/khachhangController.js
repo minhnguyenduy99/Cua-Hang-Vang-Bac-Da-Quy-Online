@@ -1,57 +1,63 @@
 const KhachHang = require('../models/KhachHang');
 const responser = require('./baseController');
+const TaiKhoan = require('../models/TaiKhoan');
+const ImageManager = require('../models/ImageManager').getInstance();
+const ListLTK     = require('../config/application-config').AppGlobalRule.LOAI_TAI_KHOAN;
 
 exports.GetAllKhachHang_GET = (req, res, next) => {
-    KhachHang.findAll()
+    KhachHang.findAllKhachHang()
     .then(listKhachHang => {
-        if (listKhachHang){
-            next(responser.getRetrieveRespone({ data: listKhachHang }));
-        }
-        else{
-            next(responser.getErrorRespone({ err: 'Retrieve data failed' }));
-        }
+        req.result = responser.get({ data: listKhachHang });
+        next();
     })
-    .catch(err => {
-        responser.getErrorRespone({ err: err});
-    });
+    .catch(err => next(err));
 }
 
 exports.CreateNewKhachHang_POST = (req, res, next) => {
-    const khachHang = req.body.khachHang;
 
-    KhachHang.create(khachHang)
+    TaiKhoan.register(req.body, ListLTK.KHACH_HANG)
     .then(newKhachHang => {
-        if (newKhachHang){
-            next(responser.getCreatedRespone({ data: newKhachHang, message: 'Tạo khách hàng mới thành công' }));
-        }
-        else{
-            next(responser.getErrorRespone({ err: 'Tạo khách hàng thất bại' }));
-        }
+        if (newKhachHang)
+            req.result = responser.created({ data: newKhachHang });
+        next();
     })
     .catch(err => {
-        next(responser.getErrorRespone({ err: err }))
-    })
+        // delete the created image of model instance
+        ImageManager.deleteImage('KhachHang', req.body.anhdaidien);
+        next(err);
+    });
 }
 
-exports.DeleteKhachHang_DELETE = (req, res, next) => {
-    const kh_id = req.params.kh_id;
+exports.GetKhachHang_IDKH = (req, res, next) => {
+    const IDKH = req.params.kh_id;
+
+    KhachHang.findKhachHangByIDKH(IDKH)
+    .then(khachhang => {
+        req.result = responser.get({ data: khachhang });
+        next();
+    })
+    .catch(err => next(err));
+}
+
+exports.GetAllPhieuMuaHang_IDKH_GET = (req, res, next) => {
+    const idkh = req.params.kh_id;
+    const idloaiphieu = parseInt(req.params.id_loaiphieu);
     
-    KhachHang.findOne({
-        where: {ID_KH: kh_id}
+    KhachHang.findPhieuByIDKH(idkh, idloaiphieu)
+    .then(khachang_phieu => {
+        req.result = responser.get({ data: khachang_phieu });
+        next();                     
+    })    
+    .catch(err => next(err));
+}
+
+exports.UpdateThongTinKhachHang_POST = (req, res, next) => {
+    const idkh = req.params.kh_id;
+
+    KhachHang.updateThongTin(idkh, req.body)
+    .then((success) => {
+        req.result = responser.updated({ options: {success: success} });
+        next();
     })
-    .then(khachHang => {
-        if (khachHang){
-            khachHang.delete()
-            .then(success => {
-                if (success)
-                    next(responser.getDeleteRespone({ message: 'Xóa khách hàng thành công'}));
-            })
-        }
-        else{
-            next(responser.getErrorRespone({ statusCode: 400, err: 'Không tìm thấy khách hàng cần xóa' }))
-        }
-    })
-    .catch(err => {
-        responser.getErrorRespone({ err: err })
-    });
+    .catch(err => next(err));
 }

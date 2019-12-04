@@ -1,35 +1,27 @@
-const app = require('./src/app');
-const db = require('./src/models/DBInterface');
-const dbmigrator = require('./src/models/MigrateDB');
+async function runServer(){
+    const db = require('./database');
+    const success = await db();
+    if (!success){
+        console.log('[Server] Close server ...');
+        return;
+    }
 
-db.connectDatabase()
-.then(() => {
-    dbmigrator.initAndAssociateAll()
-    .then(() => {
-        dbmigrator.removeFKChecks()
-        .then(() => {
-            console.log('Initialize models successfully');
-                    dbmigrator.sync('HoaDon').then(() => {
-                        dbmigrator.sync('ChiTietHoaDon').then(() => {
-                            console.log('Sync model successfully');
-                        })
-                    })
-        })
-    })
-    .catch(err => console.log(err));
-
+    const acl = require('./src/config/access-control');
+    const app = require('./src/app');
     
-    // dbmigrator.migrateAll()
-    // .then(() => {
-    //     console.log('Migrate database successfully');
-    // })
-    // .catch(err => console.log(err));
-})
- 
+    // initialize access control list for server resources
+    await acl.init();
 
-app.listen(3000, () => {
-    console.log(`The server is running...`);
-})
+    app.listen(3000, () => {
+        console.log(`The server is running...`);
+    })
+}
+
+runServer();
+
+
+
+
 
 
 

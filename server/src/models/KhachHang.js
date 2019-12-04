@@ -1,135 +1,222 @@
-const sequelize = require('sequelize');
-const uuid = require('uuid');
-const path = require('path');
-const dbInterface = require('./DBInterface');
-const sqlInstance = dbInterface.getSequelizeInstance();
-const Model = sequelize.Model;
-const appValidator = require('../config/application-config').dataValidator;
+const sequelize             = require('sequelize');
+const uuid                  = require('uuid');
+const dbInterface           = require('./DBInterface');
+const appValidator          = require('../config/application-config').dataValidator;
+const BaseModel             = require('./BaseModel');
+const Phieu                 = require('./Phieu');
+const ImageManager          = require('./ImageManager').getInstance();
+const ErrorHandler          = require('../middlewares/error-handler').ErrorHandler;
 
-const Account = require('./Account');
-const HoaDon = require('./HoaDon');
+const sqlInstance           = dbInterface.getSequelizeInstance();
 
-class KhachHang extends Model{
+class KhachHang extends BaseModel{
 
-    static initModel(){
+    static async initModel(){
         KhachHang.init({
-            ID_KH: {
+            idkh: {
                 type: sequelize.UUID,
                 primaryKey: true,
                 defaultValue: function() {
                     return uuid();
-                }
-            },
-            TenKH: {
-                type: sequelize.STRING(30),
-                allowNull: false,
-            },
-            CMND: {
-                type: sequelize.STRING(13),
-                allowNull: false,
-                unique: true,
-                validate: {
-                    is: appValidator.CMND
                 },
+                field: 'IDKH'
             },
-            NgaySinh: {
-                type: sequelize.DATEONLY,
-                allowNull: true,
+            tonggiatrimua: {
+                type: sequelize.INTEGER,
+                defaultValue: 0,
                 validate: {
-                    greaterThan18YearsOld(value){
-                        const age = new Date().getFullYear() - value.getFullYear();
-                        if (age < 18){
-                            throw new Error('Phải từ 18 tuổi trở lên');
-                        }
-                    },
-                    isYearNegative(value){
-                        const year = value.getFullYear();
-                        if (year <= 0){
-                            throw new Error('Gía trị năm không hợp lệ');
-                        }
-                    }  
+                    is: appValidator.TienTe
                 },
-                set(value){
-                    const castValue = new String(value);
-                    // Input is a string
-                    if (castValue instanceof String){
-                        const dateSplit = castValue.split('/');
-                        const dateCast = new Date(dateSplit[2], dateSplit[1] - 1, dateSplit[0]);
-                        this.setDataValue('NgaySinh', dateCast);
-                    }
-                    else{
-                        this.setDataValue('NgaySinh', value);
-                    }
-                }
+                field: 'TongGiaTriMua',
             },
-            GioiTinh: {
-                type: sequelize.STRING(8),
-                set(value) {
-                    this.setDataValue('GioiTinh', value.toUpperCase());
-                },
+            tonggiatriban: {
+                type: sequelize.INTEGER,
+                defaultValue: 0,
                 validate: {
-                    isIn: appValidator.GioiTinh
-                }
-            },
-            SDT: {
-                type: sequelize.STRING(11),
-                allowNull: false,
-                validate: {
-                    is: appValidator.SDT,
-                }
-            },
-            DiaChi: {
-                type: sequelize.TEXT,
-                allowNull: true,
-            },
-            AnhDaiDien: {
-                type: sequelize.STRING,
-                allowNull: false
-            },
-            Account_ID: {
-                type: sequelize.UUID,
-                references: {
-                    key: 'id',
-                    model: Account,
+                    is: appValidator.TienTe
                 },
-                allowNull: true,
-                defaultValue: null,
+                field: 'TongGiaTriBan',
             }
         },{
             tableName: 'KhachHang',
             timestamps: false,
             sequelize: sqlInstance,
+            hooks: {
+                afterFind: async (khachhangs, options) => {
+                    if (khachhangs instanceof KhachHang){
+                        await khachhangs.updateGiaTriMuaVaBan(); 
+                        return;
+                    }
+                    if (khachhangs instanceof Array){
+                        await Promise.all(khachhangs.map(async (khachhang) => {
+                            await khachhang.updateGiaTriMuaVaBan();
+                        }))
+                        return;
+                    }
+                },
+                afterSync: (options) => {
+                    ImageManager.deleteAllModelImages('KhachHang');
+                }
+            }
         })
     }
 
-    delete(){
-        const account_id = this.ACCOUNT_ID; 
-        const imageFile = this.AnhDaiDien;
-        // Khách hàng không có account
-        return new Promise((resolve, reject) => {
-            KhachHang.destroy({
-                where: {ID_KH: this.ID_KH}
-            })
-            .then(number => {
-                const success = number == 1;
-                // delete successfully
-                if (number == 1){
-                    const filePath = path.join(
-                        require('../config/serverConfig').publicFolderPath,
-                        'images/khachhang',
-                        imageFile);
-                    require('fs').unlink(filePath, err => {
-                        console.log(err);
-                    })
-                }
-                resolve(success);
-            })
-            .catch(err => reject(err));
+    getUpdatableFieldList(){ return []; }
+
+    static async setAssociations(){
+        const TaiKhoan = require('./TaiKhoan');
+        const Phieu    = require('./Phieu');
+
+        KhachHang.TaiKhoan = KhachHang.belongsTo(TaiKhoan, {
+            as: 'taikhoan',
+            foreignKey: {
+                name: 'idtk',
+                allowNull: true
+            }
         })
+
+        KhachHang.DanhSachPhieu = KhachHang.hasMany(Phieu, {
+            as: 'danhsach_phieu',
+            foreignKey: {
+                name: 'idkh',
+            }
+        });
+    }
+
+    static async defineScopes(){
+
+        KhachHang.addScope('withTaiKhoan', {
+            include: [{ association: KhachHang.TaiKhoan }]
+        })
+
+        KhachHang.addScope('withTaiKhoanUpdate', {
+            include: [{
+                association: KhachHang.TaiKhoan,
+                as: 'taikhoan',
+                attributes: { exclude: [] }    
+            }]
+        })
+
+        KhachHang.addScope('withPhieu', (idloaiphieu) => {
+            const ChiTietModel = Phieu.getPhieuModel(idloaiphieu)._getChiTietModel();
+            return {
+                include: [ 
+                    { 
+                        association: KhachHang.DanhSachPhieu,
+                        where: { idloaiphieu : idloaiphieu },
+                        include: [
+                            {
+                                model: ChiTietModel,
+                                as: ChiTietModel.getAssociatedPhieuName()
+                            }
+                        ] 
+                    }
+                ]
+            }
+        })
+    }
+
+    async getTongGiaTriPhieu(){
+        let [results, metadata] = await sqlInstance.query(
+            `SELECT SUM(TongGiaTri) as giatri FROM Phieu
+            WHERE IdLoaiPhieu = 1 AND IDKH = \'${this.idkh}\'
+            UNION
+            SELECT SUM(TongGiaTri) as giatri FROM Phieu
+            WHERE IdLoaiPhieu = 4 AND IDKH = \'${this.idkh}\'` 
+        )
+        let values = [0, 0]
+        results.forEach((result, index) => {
+            values[index] = parseInt(result.giatri) || 0;
+        })
+        return {
+            tonggiatrimua: values[0],
+            tonggiatriban: values[1],
+        }
+    }
+
+    async updateGiaTriMuaVaBan(){
+        const value = await this.getTongGiaTriPhieu();
+        this.set('tonggiatriban', value.tonggiatriban);
+        this.set('tonggiatrimua', value.tonggiatrimua);
+    }
+    
+    async updateTongGiaTriMua(){
+        const Phieu = require('./Phieu');
+        return Phieu.sum(sequelize.col('tonggiatri'), {
+            where: {idkh: this.getDataValue('idkh')}
+        })
+        .then(tonggiatri => {
+            this.setDataValue('tonggiatrimua', tonggiatri);
+            return tonggiatri;
+        })
+        .catch(err => {
+            return Promise.reject(err);
+        })
+    }
+
+    async updateTongGiaTriMuaThem(giatriThem){
+        try{
+            const newGiaTriMua = this.tonggiatrimua + giatriThem;
+            return this.update({tonggiatrimua: newGiaTriMua}, {fields: ['tonggiatrimua']});
+        }
+        catch(err) {
+            return Promise.reject(err);
+        }
+    }
+
+    static findAllKhachHang(){
+        return KhachHang.scope('withTaiKhoan').findAll()
+        .then(listKH => {
+            return listKH;
+        });
+    }
+
+    static findKhachHangByIDKH(idkh){
+        return KhachHang.scope('withTaiKhoan').findOne({
+            where: {idkh: idkh}
+        })
+    }
+
+    static findKhachHangForUpdateByID(idkh){
+        return KhachHang.scope('withTaiKhoanUpdate').findOne({
+            where: {idkh: idkh}
+        })
+    }
+
+    static findPhieuByIDKH(idkh, idloaiphieu){
+        if (!idloaiphieu)
+            return null;
+        
+        return KhachHang.scope({ method: ['withPhieu', idloaiphieu] }).findOne({
+            where: {idkh: idkh},
+        })
+        .then(khachhang => {
+            return khachhang;
+        })
+        .catch(err => {
+            throw err;
+        })
+    }
+
+    static async updateThongTin(idkh, updateObj){
+        updateObj.modelName = 'khachhang';          //      Chỉ đinh tên của model ứng với tài khoản
+        
+        const khachhang = await this.findKhachHangForUpdateByID(idkh);
+        if (!khachhang){
+            throw ErrorHandler.createError('rs_not_found', {fields: ['idkh']});
+        }
+        const taikhoan = khachhang.taikhoan;
+
+        const success = await sqlInstance.transaction(async (t) => {
+            const results = await Promise.all([
+                khachhang.updateModel(updateObj, t),
+                taikhoan.updateModel(updateObj, t)
+            ])
+            return results.reduce((pre, cur) => pre.success && cur.success);
+        })
+
+        return success;
     }
 }
-
-
-
 
 module.exports = KhachHang;

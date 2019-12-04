@@ -1,37 +1,33 @@
 const LocalStrategy = require('passport-local').Strategy;
 
-const Account = require('../models/Account');
+const TaiKhoan = require('../models/TaiKhoan');
 
 module.exports = (passport) => {
 
-    passport.use('account-login', new LocalStrategy(
-        (username, password, done) => {
-            Account.findOne({
-                where: {username: username}
-            })
-            .then(account => {
-                if (!account){
-                    return done(null, false, {message: 'The username is incorrect'})
-                }
-                if (!account.isPasswordCorrect(password)){
-                    return done(null, false, {message: 'The password is incorrect'})
-                }
-                return done(null, account, {message: 'The user is authenticated'});
+    passport.use('user-login', new LocalStrategy(
+        {
+            usernameField: 'tendangnhap',
+            passwordField: 'matkhau',
+        },
+        (tendangnhap, matkhau, done) => {
+            TaiKhoan.authenticate(tendangnhap, matkhau)
+            .then(taikhoan => {
+                return done(null, taikhoan)
             })
             .catch(err => done(err));
         }
     ))
 
-    passport.serializeUser((account, done) => {
-        done(null, account.id);
+    passport.serializeUser((taikhoan, done) => {
+        done(null, taikhoan.idtk);
     })
 
     passport.deserializeUser((id, done) => {
-        Account.findOne({
-            where: {id: id}
+        TaiKhoan.findOne({
+            where: {idtk: id},
         })
-        .then(account => {
-            done(null, account);
+        .then(taikhoan => {
+            done(null, taikhoan);
         })
     })
 }

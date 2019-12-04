@@ -1,39 +1,36 @@
 const khachhangController = require('../../controllers/khachhangController');
-const router = require('express').Router();
-const dataMapping = require('../../middlewares/data-mapping');
-const uploader = require('../../middlewares/file-uploader').imageUploader;
-const khachhangFolder = 'khachhang';
-const field = 'kh_anhdaidien';
+const sender              = require('./response-sender');
+const router              = require('express').Router();
+const uploader            = require('../../middlewares/file-uploader').imageUploader;
 
-router.get('/', khachhangController.GetAllKhachHang_GET, (result, req, res, next) => {
-    if (result.err){
-        return res.status(result.statusCode).json(result);
-    }
-    return res.status(result.statusCode).json(result.data);
+const field = 'anhdaidien';
+
+router.post('/:kh_id/update', 
+    uploader('khachhang', field).single(field),
+    khachhangController.UpdateThongTinKhachHang_POST, 
+    (req, res, next) => {
+    sender.send(res, req.result);
+})
+
+router.get('/', khachhangController.GetAllKhachHang_GET, (req, res, next) => {
+    sender.send(res, req.result);
 });
+
+router.get('/:kh_id', khachhangController.GetKhachHang_IDKH, (req, res, next) => {
+    sender.send(res, req.result);
+})
+
+router.get('/:kh_id/phieus/:id_loaiphieu', khachhangController.GetAllPhieuMuaHang_IDKH_GET, (req, res, next) => {
+    sender.send(res, req.result);
+})
 
 router.post('/register', 
-    uploader(khachhangFolder, field).single(field), 
-    dataMapping.Mapping_KhachHang, 
+    uploader('khachhang', field).single(field), 
     khachhangController.CreateNewKhachHang_POST,
-    (result, req, res, next) => {
-        if (result.err){
-            
-            require('fs').unlink(req.file.path, err => {
-                console.log(err);
-            })
-            return res.status(result.statusCode).json(result);
-        }
-        res.status(result.statusCode).json({
-            message: result.message,
-            data: result.data
-        })
+    (req, res, next) => {
+        sender.send(res, req.result);
     }
 );
-
-router.delete('/:kh_id', khachhangController.DeleteKhachHang_DELETE, (result, req, res, next) => {
-    res.status(result.statusCode).json(result);  
-});
 
 
 module.exports = router;
