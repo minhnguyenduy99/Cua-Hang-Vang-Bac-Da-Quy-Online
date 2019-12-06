@@ -10,7 +10,7 @@ function parseArgs(){
             mode                : "TEST",
 
             //  The database connection name specified in serverConfig.js
-            db                  : "LOCAL",          
+            db                  : "DEVELOPMENT",          
 
             // The sync option. Could be:
             //  'all'

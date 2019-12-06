@@ -9,7 +9,7 @@ var serverConfig = {
             user: 'pKAX30MXzl',
             password: 'XlKkAmxDDu',
             database: 'pKAX30MXzl',
-            port: 3306
+            port: 3306,
         },
         {
             name: 'TEST',
@@ -25,7 +25,8 @@ var serverConfig = {
             user: 'root',
             password: 'localhost123',
             port: 3306,
-            database: 'cuahangvangbacdaquy'
+            database: 'cuahangvangbacdaquy',
+            logging: true
         },
     ],
 

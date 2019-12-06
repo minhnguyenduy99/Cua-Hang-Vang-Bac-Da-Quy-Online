@@ -23,6 +23,9 @@ const generateSaltAndPassword = (taikhoan) => {
 class TaiKhoan extends BaseModel{
 
     static async initModel(){
+        await BaseModel.initModel();
+        const { deletedAt, updatedAt, createdAt } = BaseModel.timeStampsObj;
+
         TaiKhoan.init({
             idtk: {
                 type: sequelize.UUID,
@@ -137,7 +140,11 @@ class TaiKhoan extends BaseModel{
             },
         },
         {
-            timestamps: false,
+            timestamps: true,
+            deletedAt: deletedAt,
+            createdAt: createdAt,
+            updatedAt: updatedAt,
+            paranoid: true,
             sequelize: sqlInstance,
             tableName: 'TaiKhoan',
             hooks: {
@@ -168,11 +175,14 @@ class TaiKhoan extends BaseModel{
             foreignKey: {
                 name: 'idtk',
                 allowNull: true
-            }
+            },
         })
     }
 
     static async defineScopes(){
+        const NhanVien = require('./NhanVien');
+        const KhachHang = require('./KhachHang');
+
         TaiKhoan.addScope('defaultScope', {
             attributes: {
                 exclude: ['tendangnhap', 'matkhau', 'salt']
@@ -181,15 +191,22 @@ class TaiKhoan extends BaseModel{
 
         TaiKhoan.addScope('authenticate', (tendangnhap) => {
             return{
-                where: {tendangnhap: tendangnhap}
+                where: { tendangnhap: tendangnhap }
             }
         })
 
         TaiKhoan.addScope('withAssociatedModel', (model, loaitk) => {
             return {
-                where: {loaitk: loaitk},
                 include: [{model: model, as: model.name.toLowerCase() }] 
             }
+        })
+
+        TaiKhoan.addScope('withNhanVien', {
+            include: [{ model: NhanVien, as: 'nhanvien' }]
+        })
+
+        TaiKhoan.addScope('withKhachHang', {
+            include: [{ model: KhachHang, as: 'khachhang'}]
         })
 
         TaiKhoan.addScope('withAllInfos', {
@@ -201,16 +218,18 @@ class TaiKhoan extends BaseModel{
         return encryptor.encrypt(enteredPassword, this.salt) === this.matkhau;
     }
 
-    static async authenticate(tendangnhap, matkhau){
-        return TaiKhoan.scope({
-            method: ['authenticate', tendangnhap]
-        }).findOne()
-        .then(taikhoan => {
-            if (!taikhoan || !taikhoan.isPasswordCorrect(matkhau))
-                return null; 
-            const plainTaiKhoan = taikhoan.getPlainObjExclude(['tendangnhap', 'matkhau', 'salt']);
-            return plainTaiKhoan;
-        })
+    static async authenticate(loaitk, tendangnhap, matkhau){
+        const mappingModel = this.getMappingTypeModel(loaitk);
+
+        const taikhoan = await TaiKhoan.scope([
+            { method: ['authenticate', tendangnhap] },
+            { method: ['withAssociatedModel', mappingModel] }
+        ]).findOne();
+
+        if (!taikhoan || !taikhoan.isPasswordCorrect(matkhau))
+                return null;
+
+        return taikhoan;
     }
 
     static findAllTaiKhoan(taikhoanType){

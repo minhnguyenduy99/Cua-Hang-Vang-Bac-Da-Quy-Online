@@ -3,7 +3,7 @@ module.exports = {
     // specify how data should be validated in the application
     dataValidator: {
         SDT          :   { args: RegExp(/^[0-9]{10,11}$/),         msg: 'Số điện thoại phải 10 hoặc 11 chữ số' },
-        CMND         :   { args: RegExp(/^[0-9]{10,11}$/),         msg: 'CMND không hợp lệ'                    },
+        CMND         :   { args: RegExp(/^[0-9]{9,11}$/),         msg: 'CMND không hợp lệ'                    },
         GioiTinh     :   { args: ['NAM', 'NU', 'KHONGRO'],         msg: 'Giới tính không hợp lệ'               },
         TenTaiKhoan  :   { args: RegExp(/^[a-zA-Z]\w*$/),          msg: 'Tên tài khoản không hợp lệ'           },
         MatKhau      :   { args: RegExp(/^\w{8,}$/),               msg: 'Mật khẩu phải từ 8 ký tự trở lên'     },
@@ -63,6 +63,7 @@ module.exports = {
             QUAN_LY_KHO     : 3,
             GIAM_DOC        : 4,
             KHACH_HANG      : 5,
+            ADMIN           : 6,
         },
 
         // Danh sách các chức vụ của nhân viên

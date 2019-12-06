@@ -65,7 +65,7 @@ module.exports.GetAllPhieuNhapKho_GET = (req, res, next) => {
     });
 }
 
-module.exports.UpdateNhaCungCap_POST = (req, res, next) => {
+module.exports.UpdateNhaCungCap_PUT = (req, res, next) => {
     const idnhacc = req.params.nhacc_id;
 
     NhaCungCap.updateThongTin(idnhacc, req.body)

@@ -38,7 +38,7 @@ module.exports.GetDeletedDichVu_GET = (req, res, next) => {
 }
 
 module.exports.DeleteDichVu_DELETE = (req, res, next) => {
-    const iddv = req.params.iddv;
+    const iddv = req.params.dv_id;
 
     DichVu.delete(iddv)
     .then(({ success, listDichVu }) => {
@@ -55,7 +55,7 @@ module.exports.DeleteDichVu_DELETE = (req, res, next) => {
 }
 
 module.exports.RestoreDichVu_GET = (req, res, next) => {
-    const iddv = req.params.iddv;
+    const iddv = req.params.dv_id;
 
     DichVu.restoreOne(iddv)
     .then(dichvu => {
@@ -71,8 +71,8 @@ module.exports.RestoreDichVu_GET = (req, res, next) => {
     .catch(err => next(err));
 }
 
-module.exports.UpdateDichVu_POST = (req, res, next) => {
-    const iddv = req.params.iddv;
+module.exports.UpdateDichVu_PUT = (req, res, next) => {
+    const iddv = req.params.dv_id;
 
     DichVu.updateDichVu(iddv, req.body)
     .then(success => {

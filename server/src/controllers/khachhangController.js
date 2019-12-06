@@ -3,6 +3,7 @@ const responser = require('./baseController');
 const TaiKhoan = require('../models/TaiKhoan');
 const ImageManager = require('../models/ImageManager').getInstance();
 const ListLTK     = require('../config/application-config').AppGlobalRule.LOAI_TAI_KHOAN;
+const ErrorHandler      = require('../middlewares/error-handler').ErrorHandler;
 
 exports.GetAllKhachHang_GET = (req, res, next) => {
     KhachHang.findAllKhachHang()
@@ -41,7 +42,7 @@ exports.GetKhachHang_IDKH = (req, res, next) => {
 
 exports.GetAllPhieuMuaHang_IDKH_GET = (req, res, next) => {
     const idkh = req.params.kh_id;
-    const idloaiphieu = parseInt(req.params.id_loaiphieu);
+    const idloaiphieu = 1;
     
     KhachHang.findPhieuByIDKH(idkh, idloaiphieu)
     .then(khachang_phieu => {
@@ -58,6 +59,22 @@ exports.UpdateThongTinKhachHang_POST = (req, res, next) => {
     .then((success) => {
         req.result = responser.updated({ options: {success: success} });
         next();
+    })
+    .catch(err => next(err));
+}
+
+exports.DeleteKhachHang_DELETE = (req, res, next) => {
+    const idkh = req.params.kh_id;
+
+    KhachHang.deletekhachHang(idkh)
+    .then(listKhachHang => {
+        // delete successfully
+        if (listKhachHang){
+            req.result = responser.deleted({ data: listKhachHang });
+            next();
+        }
+        else
+            next(ErrorHandler.createError('rs_not_found', { fields: ['idnv'] }));
     })
     .catch(err => next(err));
 }

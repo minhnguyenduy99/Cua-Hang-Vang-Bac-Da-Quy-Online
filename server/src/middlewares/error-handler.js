@@ -1,24 +1,29 @@
 const sequelize = require('sequelize');
 const express   = require('express');
 
+const router    = express.Router();
+
 const ERROR_KEY_MAPPING = {
-    not_unique    :   { code: 1, name: 'KEY_EXISTS'           },
-    is            :   { code: 2, name: 'WRONG_FORMAT'         },
-    in            :   { code: 3, name: 'VALUE_UNDEFINED'      },
-    fk_not_found  :   { code: 4, name: 'KEY_VALUE_NOT_FOUND'  },
-    rs_not_found  :   { code: 5, name: 'RESOURCE_NOT_FOUND'   },
-    invalid_value :   { code: 6, name: 'INVALID_VALUE'        }
+    not_unique          :   { code: 1, name: 'KEY_EXISTS'           },
+    is                  :   { code: 2, name: 'WRONG_FORMAT'         },
+    in                  :   { code: 3, name: 'VALUE_UNDEFINED'      },
+    fk_not_found        :   { code: 4, name: 'KEY_VALUE_NOT_FOUND'  },
+    rs_not_found        :   { code: 5, name: 'RESOURCE_NOT_FOUND'   },
+    invalid_value       :   { code: 6, name: 'INVALID_VALUE'        },
+    req_not_found       :   { code: 7, name: 'REQUEST_NOT_FOUND'    },
+    unauthorized        :   { code: 8, name: 'UNAUTHORIZED'         },
 }
 
 class ErrorObjectConstructor extends Error{
 
-    constructor(code, name, fields = null, detail = null, params = null){
+    constructor(code, name, statusCode = 400, fields = null, detail = null, params = null){
         super(detail);
-        this.code    = code;
-        this.name    = name;
-        this.fields  = fields  || undefined;
-        this.detail  = detail  || undefined;
-        this.params  = params  || undefined;
+        this.code       = code;
+        this.statusCode = statusCode;
+        this.name       = name;
+        this.fields     = fields  || undefined;
+        this.detail     = detail  || undefined;
+        this.params     = params  || undefined;
     }
 }
 
@@ -27,9 +32,9 @@ class ErrorObjectConstructor extends Error{
 class ErrorHandler{
 
     static createError(errorType, errorOption = {}){
-        const { fields = null, message = null } = errorOption;
+        const { statusCode, fields = null, message = null } = errorOption;
         const { code, name } = ERROR_KEY_MAPPING[errorType];
-        const error = new ErrorObjectConstructor(code, name, fields, message);
+        const error = new ErrorObjectConstructor(code, name, statusCode, fields, message);
         return error;
     }
 
@@ -82,52 +87,47 @@ class ErrorHandler{
 }
 
 
+function validation_error(err) {
+    const errItems = err.errors;
 
-
-// ** Error handlers **
-
-module.exports.request_not_found = (req, res, next) => {
-    next({
-        status  : 404, 
-        name    : 'REQUEST_NOT_FOUND',
-    });
-}
-
-module.exports.resource_not_found = (err, req, res, next) => {
-    if (!(err instanceof ErrorObjectConstructor))
-        next(err);
-    else{
-        // not implemented yet  
-        next({ status: 400, ...err });
+    // Not the error from sequelize
+    if (!errItems){
+        // stop navigating it to next middlewares
+        console.log('Unexpected Error');
+        throw err;
     }
+
+    const errObj = ErrorHandler.parseValidationError(errItems[0]);
+
+    return { status: 400, ...errObj };
 }
 
-module.exports.validation_error = (err, req, res, next) => {
-    if (!(err instanceof sequelize.ValidationError)) 
-        next(err);     // ignore if it is not validation error type
-    else{
-        const errItems = err.errors;
+function database_error(err) {
+    const errorObj = ErrorHandler.parseDatabaseError(err);
+    return { status: 400, ...errorObj };
+}
 
-        // Not the error from sequelize
-        if (!errItems){
-            // stop navigating it to next middlewares
-            console.log('Unexpected Error');
-            throw err;
-        }
-    
-        const errObj = ErrorHandler.parseValidationError(errItems[0]);
-    
-        next({ status: 400, ...errObj});
+function error_routing(req, res, next) {
+    const err = req.error;
+    if (err instanceof ErrorObjectConstructor){
+        const { statusCode, ...error } = err;
+        next({ status: statusCode, ...error });   
+        return;
     }
-}
-
-module.exports.database_error = (err, req, res, next) => {
-    if (!(err instanceof sequelize.DatabaseError))
-        next(err);
-    else{
-        const errorObj = ErrorHandler.parseDatabaseError(err);
-        next({ status: 400, ...errorObj });
+    if (err instanceof sequelize.ValidationError){
+        next(validation_error(err));
+        return;
     }
+    if (err instanceof sequelize.DatabaseError){
+        next(database_error(err));
+        return;
+    }
+
+    // The error has not been handled yet
+    next({ err: 'UnhandledError', statusCode: 500 })
 }
 
-module.exports.ErrorHandler  = ErrorHandler;
+router.use(error_routing);
+
+module.exports.router         = router;
+module.exports.ErrorHandler   = ErrorHandler;

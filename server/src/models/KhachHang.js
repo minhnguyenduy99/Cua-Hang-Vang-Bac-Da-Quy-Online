@@ -1,12 +1,14 @@
 const sequelize             = require('sequelize');
 const uuid                  = require('uuid');
 const dbInterface           = require('./DBInterface');
-const appValidator          = require('../config/application-config').dataValidator;
+const appConfig             = require('../config/application-config');
 const BaseModel             = require('./BaseModel');
 const Phieu                 = require('./Phieu');
 const ImageManager          = require('./ImageManager').getInstance();
 const ErrorHandler          = require('../middlewares/error-handler').ErrorHandler;
+const TaiKhoan              = require('./TaiKhoan');
 
+const { dataValidator: appValidator, AppGlobalRule } = appConfig;
 const sqlInstance           = dbInterface.getSequelizeInstance();
 
 class KhachHang extends BaseModel{
@@ -183,6 +185,18 @@ class KhachHang extends BaseModel{
         })
     }
 
+    static async authenticate(tendangnhap, matkhau){
+        const loaitk = AppGlobalRule.LOAI_TAI_KHOAN.KHACH_HANG;
+        const taikhoan = await TaiKhoan.authenticate(loaitk, tendangnhap, matkhau);
+
+        if (!taikhoan || !taikhoan.khachhang)
+            return null;
+        
+        const { idtk, khachhang: { idkh } } = taikhoan;
+
+        return { idtk, idkh, loaitk };
+    }
+
     static findPhieuByIDKH(idkh, idloaiphieu){
         if (!idloaiphieu)
             return null;
@@ -199,7 +213,7 @@ class KhachHang extends BaseModel{
     }
 
     static async updateThongTin(idkh, updateObj){
-        updateObj.modelName = 'khachhang';          //      Chỉ đinh tên của model ứng với tài khoản
+        updateObj.modelname = 'khachhang';          //      Chỉ đinh tên của model ứng với tài khoản
         
         const khachhang = await this.findKhachHangForUpdateByID(idkh);
         if (!khachhang){
@@ -216,6 +230,24 @@ class KhachHang extends BaseModel{
         })
 
         return success;
+    }
+
+    static async deletekhachHang(idkh){
+        const khachhang = await KhachHang.scope('withTaiKhoan').findOne({
+            where: { idkh: idkh }
+        })
+
+        if (!khachhang)
+            return null;
+
+        const idtk = khachhang.taikhoan.idtk;
+
+        await khachhang.destroy();
+        await TaiKhoan.destroy({
+            where: { idtk: idtk }
+        })
+
+        return KhachHang.findAllKhachHang();
     }
 }
 

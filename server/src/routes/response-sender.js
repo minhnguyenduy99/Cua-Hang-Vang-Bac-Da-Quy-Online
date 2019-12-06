@@ -1,5 +1,5 @@
-const responser     = require('../../controllers/baseController');
-const CODE          = require('../../config/serverConfig').SERVER_RESPONE_CODE;
+const responser     = require('../controllers/baseController');
+const CODE          = require('../config/serverConfig').SERVER_RESPONE_CODE;
 
 module.exports = class ResponeSender{
     

@@ -73,3 +73,21 @@ module.exports.GetThongTinLuong_GET = (req, res, next) => {
         next(err);
     });
 }
+
+module.exports.XoaNhanVien_DELETE = (req, res, next) => {
+    const idnv = req.params.nv_id;
+
+    NhanVien.deleteNhanVien(idnv)
+    .then(listNhanVien => {
+        if (listNhanVien){
+            req.result = responser.deleted({ data: listNhanVien });
+            next();
+        }
+        else{
+            next(ErrorHandler.createError('rs_not_found', { fields: ['idnv'] }));
+        }
+    })
+    .catch(err => {
+        next(err);
+    })
+}

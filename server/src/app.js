@@ -5,20 +5,20 @@ const morgan           = require('morgan');
 const passport         = require('passport');
 const session          = require('express-session');
 const publicPath       = require('./config/serverConfig').publicFolderPath;
-const ErrorHandler     = require('./middlewares/error-handler');
+const {ErrorHandler, router: ErrorRouter}     = require('./middlewares/error-handler');
 
 // server route import
+const khachhangRoute   = require('./routes/khachhang');
+const sanphamRoute     = require('./routes/sanpham');
+const dichvuRoute      = require('./routes/dichvu');
+const quanlyRoute      = require('./routes/quanly/route');
+const nhanvienRoute    = require('./routes/nhanvien/route');
+const khoRoute         = require('./routes/kho/route');
 const loginRoute       = require('./routes/login');
-const khachhangRoute   = require('./routes/api/khachhangs');
-const nhanvienRoute    = require('./routes/api/nhanviens');
-const sanphamRoute     = require('./routes/api/sanphams');
-const nhacungcapRoute  = require('./routes/api/nhacungcaps');
-const phieuRoute       = require('./routes/api/phieus');
-const dichvuRoute      = require('./routes/api/dichvus');
-const quanlyRoute      = require('./routes/quanly');
+const logoutRoute      = require('./routes/logout');
+
 
 const passportConfig   = require('./config/passport');
-const authChecker      = require('./middlewares/authenticate-checker');
 
 const app = express();
 
@@ -29,7 +29,7 @@ app.use(session({
 }))
 
 // middlewares
-app.use(bodyParser.urlencoded({extended : false}));
+app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(morgan('dev'));
 app.use(passport.initialize());
@@ -38,42 +38,32 @@ app.use(passport.session());
 // config passport for authentication request
 passportConfig(passport);
 
-
 app.use('/public', express.static(publicPath, {
     maxAge: '1d',
 }));
 
 // route handles
-app.use('/login', loginRoute);
+app.use('/sanpham', sanphamRoute);
+app.use('/dichvu', dichvuRoute);
 app.use('/quanly', quanlyRoute);
-app.use('/khachhangs', khachhangRoute);
-app.use('/nhanviens', nhanvienRoute);
-app.use('/sanphams', sanphamRoute);
-app.use('/nhacungcaps', nhacungcapRoute);
-app.use('/phieus', phieuRoute);
-app.use('/dichvus', dichvuRoute);
+app.use('/nhanvien', nhanvienRoute);
+app.use('/kho', khoRoute);
+app.use('/login', loginRoute);
+app.use('/logout', logoutRoute);
+app.use('/khachhang', khachhangRoute);
 
+// handle request not found error
+app.use((req, res, next) => {
+    next(ErrorHandler.createError('req_not_found'));
+});
 
-
-app.get('/', authChecker.isUserLoggedIn, (req, res) => {
-    if (req.user_logined){
-        res.status(200).json({
-            message: 'Tự động đăng nhập'
-        })
-    }
-    else{
-        res.redirect('/login');
-    }
-})
-
-
-app.use(ErrorHandler.request_not_found);
-app.use(ErrorHandler.resource_not_found);
-app.use(ErrorHandler.validation_error);
-app.use(ErrorHandler.database_error);
-
-// error handlers
+// wrap error in req to send to ErrorHandler router
 app.use((err, req, res, next) => {
+    req.error = err;
+    next();
+});
+
+app.use(ErrorRouter, (err, req, res, next) => {
     let {status, ...errInfo} = err;
     status = status || 500;
     res.status(status);

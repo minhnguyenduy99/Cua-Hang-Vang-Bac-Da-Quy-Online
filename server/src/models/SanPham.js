@@ -5,6 +5,7 @@ const TableIDs          = require('./TableLastIDs');
 const BaseModel         = require('./BaseModel');
 const ImageManager      = require('./ImageManager').getInstance();
 const ErrorHandler      = require('../middlewares/error-handler').ErrorHandler;
+const ConditionParser   = require('../helpers/condition-parser');
 
 const dataValidator       = appValidator.dataValidator;
 const appConfigValidator  = appValidator.AppGlobalRule;
@@ -130,6 +131,10 @@ class SanPham extends BaseModel{
                 afterSync(options){
                     ImageManager.deleteAllModelImages('SanPham');
                 },
+                beforeCreate(sanpham, options){
+                    // Số lượng khi tạo sản phẩm mặc định là 0
+                    sanpham.set('soluong', 0);
+                }
             }
         })
     }
@@ -248,8 +253,11 @@ class SanPham extends BaseModel{
         })
     }
 
-    static findAllSanPham(){
-        return SanPham.scope('available', 'withNhaCC', 'notIncludeTimeStamps').findAll();
+    static findAllSanPham(condition = null){
+        const whereCondition = new ConditionParser(condition).getCondition();
+        return SanPham.scope('available', 'withNhaCC', 'notIncludeTimeStamps').findAll({
+            where: whereCondition
+        });
     }
 
     static findSanPhamByID(id){

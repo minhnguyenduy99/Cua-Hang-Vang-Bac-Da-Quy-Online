@@ -6,6 +6,7 @@ const BaseModel             = require('./BaseModel');
 const ImageManager          = require('./ImageManager').getInstance();
 const ChiTietLuong          = require('./ChiTietLuong');
 const ErrorHandler          = require('../middlewares/error-handler').ErrorHandler;
+const TaiKhoan              = require('./TaiKhoan');
 
 const data_validator        = appConfig.dataValidator;
 const appGlobalValidator    = appConfig.AppGlobalRule;
@@ -13,6 +14,8 @@ const sqlInstance           = DBInterface.getSequelizeInstance();
 
 class NhanVien extends BaseModel{
     static async initModel(){
+        await BaseModel.initModel();
+        const {updatedAt, deletedAt, createdAt} =  BaseModel.timeStampsObj;
 
         NhanVien.init({
             idnv: {
@@ -74,7 +77,11 @@ class NhanVien extends BaseModel{
             },
         }, {
             tableName: 'NhanVien',
-            timestamps: false,
+            timestamps: true,
+            updatedAt: updatedAt,
+            deletedAt: deletedAt,
+            createdAt: createdAt,
+            paranoid: true,
             sequelize: sqlInstance,
             hooks: {
                 afterSync(options){
@@ -120,8 +127,8 @@ class NhanVien extends BaseModel{
             as: 'taikhoan',
             foreignKey: {
                 name: 'idtk',
-                allowNull: true
-            }
+                allowNull: true,
+            },
         })
     }
 
@@ -168,6 +175,18 @@ class NhanVien extends BaseModel{
         return NhanVien.scope('withTaiKhoanUpdate').findOne({
             where: {idnv: idnv}
         })
+    }
+
+    static async authenticate(tendangnhap, matkhau){
+        const loaitaikhoan = appGlobalValidator.LOAI_TAI_KHOAN.NHAN_VIEN;
+        const taikhoan = await TaiKhoan.authenticate(loaitaikhoan, tendangnhap, matkhau);
+
+        if (!taikhoan || !taikhoan.nhanvien)
+            return null;
+        
+        const { idtk, loaitk, nhanvien: { idnv } } = taikhoan;
+
+        return { idtk, idnv, loaitk };
     }
 
     static register(taikhoan, nhanvien){
@@ -218,6 +237,24 @@ class NhanVien extends BaseModel{
         if (!chitietluong)
             return Promise.reject(ErrorHandler.createError('rs_not_found', { fields: ['idnv'] }));
         return chitietluong;
+    }
+
+    static async deleteNhanVien(idnv){
+        const nhanvien = await NhanVien.scope('withTaiKhoan').findOne({
+            where: { idnv: idnv }
+        })
+
+        if (!nhanvien)
+            return null;
+
+        const idtk = nhanvien.taikhoan.idtk;
+
+        await nhanvien.destroy();
+        await TaiKhoan.destroy({
+            where: { idtk: idtk }
+        })
+
+        return NhanVien.findAllNhanVien();
     }
 }
 

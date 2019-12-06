@@ -96,15 +96,20 @@ module.exports = class DBMigrator{
     static async removeFKChecks(){
         return sqlInstance.query('SET FOREIGN_KEY_CHECKS = 0');
     }
+
+    static async addFKChecks(){
+        return sqlInstance.query('SET FOREIGN_KEY_CHECKS = 1');
+    }
     
     static async syncAll(){
-        return DBMigrator.removeFKChecks()
-        .then(() => {
-            return sqlInstance.sync({ force: true })
-        })
-        .catch(err => {
+        try{
+            await DBMigrator.removeFKChecks();
+            await sqlInstance.sync({ force: true })
+            await DBMigrator.addFKChecks();
+        }
+        catch(err){
             return Promise.reject(err)
-        });  
+        };  
     }
 
     static async sync(listModelName){
@@ -116,6 +121,7 @@ module.exports = class DBMigrator{
         await this.removeFKChecks();
         await this.drop(models.reverse());
         await Promise.all(models.reverse().map(model => model.sync()));
+        return this.addFKChecks();
     }
 
     static async drop(models){

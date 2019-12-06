@@ -4,7 +4,9 @@ const ImageManager = require('../models/ImageManager').getInstance();
 const ErrorHandler = require('../middlewares/error-handler').ErrorHandler;
 
 module.exports.GetToanBoSanPham_GET = (req, res, next) => {
-    SanPham.findAllSanPham()
+    const condition = req.body;
+
+    SanPham.findAllSanPham(condition)
     .then(listSanPham => {
         req.result = responser.get({ data: listSanPham });
         next();
@@ -92,12 +94,12 @@ module.exports.RestoreSanPham_GET = (req, res, next) => {
     .catch(err => next(err));
 }
 
-module.exports.UpdateSanPham_POST = (req, res, next) => {
+module.exports.UpdateSanPham_PUT = (req, res, next) => {
     const sp_id = req.params.sp_id;
 
     SanPham.updateSanPham(sp_id, req.body)
     .then(success => {
-        req.result = responser.updated({ options: {success: true} });
+        req.result = responser.updated({ options: {success: success} });
         next();
     })
     .catch(err => next(err));

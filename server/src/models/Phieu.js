@@ -277,7 +277,7 @@ class Phieu extends BaseModel{
         if (ngaybatdau && ngayketthuc){
             const startTime = DateHelper.parseFrom(ngaybatdau).setHours(0);
             const endTime   = DateHelper.parseFrom(ngayketthuc).setHours(24);
-            PhieuModel.scope({ method: ['byThoiGian', startTime, endTime] });
+            PhieuModel = PhieuModel.scope({ method: ['byThoiGian', startTime, endTime] });
         }
 
         return PhieuModel.findAll({

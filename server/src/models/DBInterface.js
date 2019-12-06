@@ -17,7 +17,7 @@ function getDBConnection(name){
             sequelize: new Sequelize(dbConfig.database, dbConfig.user, dbConfig.password, {
                 host: dbConfig.host,
                 dialect: 'mysql',
-                logging: false
+                logging: dbConfig.logging ? console.log : false
             })
         } 
     }
