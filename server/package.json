@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "nodemon --inspect server.js --mode TEST",
-    "dev": "nodemon server.js --db DEVELOPMENT",
+    "dev": "nodemon server.js --db DEVELOPMENT --sync all",
     "connect_db": "nodemon database.js --db LOCAL"
   },
   "keywords": [], 

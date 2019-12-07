@@ -2,9 +2,9 @@ const ChiTietDiemDanh       = require('../models/ChiTietDiemDanh');
 const responser             = require('./baseController');
 
 module.exports.Create_POST = (req, res, next) => {
-    const {listdiemdanh, ngay, thang, nam} = req.body;
+    const {danhsach_diemdanh, ngay, thang, nam} = req.body;
 
-    ChiTietDiemDanh.createListDiemDanh(listdiemdanh, ngay, thang, nam)
+    ChiTietDiemDanh.createListDiemDanh(danhsach_diemdanh, ngay, thang, nam)
     .then(listCTDD => {
         req.result = responser.created({ data: listCTDD });
         next();

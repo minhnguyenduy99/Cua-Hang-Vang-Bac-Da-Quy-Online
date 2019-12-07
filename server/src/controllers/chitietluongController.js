@@ -14,7 +14,7 @@ module.exports.GetChiTietLuongNhanVien_GET = (req, res, next) => {
     .catch(err => next(err));
 }
 
-module.exports.CreateChiTietLuongNhanVien_GET = (req, res, next) => {
+module.exports.CreateChiTietLuongNhanVien_POST = (req, res, next) => {
     const {danhsach_diemdanh, thang, nam} = req.body;
 
     ChiTietLuong.createAllChiTietLuong(danhsach_diemdanh, thang, nam)

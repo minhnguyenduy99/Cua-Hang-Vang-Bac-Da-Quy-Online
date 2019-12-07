@@ -6,6 +6,7 @@ const Phieu             = require('./Phieu');
 const TableIDS          = require('./TableLastIDs');
 const ErrorHandler      = require('../middlewares/error-handler').ErrorHandler;
 const appConfig         = require('../config/application-config');
+const ConditionParser   = require('../helpers/condition-parser');
 
 const Op                 = sequelize.Op;
 const globalAppValidator = appConfig.AppGlobalRule;
@@ -213,8 +214,12 @@ class BaoCao extends BaseModel{
     }
 
     static async findWithDynamicCondition(condition){
-        return BaoCao.scope('withCTBaoCao', 'raw')
-            .findAll({ where: condition })
+        let { thoigianbd, thoigiankt, ...restCondition } = condition;
+        thoigianbd = DateHelper.parseToYearMonth(thoigianbd);
+        thoigiankt = DateHelper.parseToYearMonth(thoigiankt);
+        const whereCondition = new ConditionParser({ thoigianbd, thoigiankt, ...restCondition}).getCondition();
+        return BaoCao.scope('withCTBaoCao')
+            .findAll({ where: whereCondition })
     }
 
     // ** OVERRIDABLE METHOD GROUP

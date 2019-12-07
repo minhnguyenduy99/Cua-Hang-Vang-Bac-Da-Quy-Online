@@ -37,8 +37,8 @@ class ConditionParser {
         return this;
     }
 
-    addValue(keyValueObj){
-        this.condition = { keyValueObj, ...this.condition };
+    addValue(field, value){
+        this.condition[field] = value;
         return this;
     }
 }
