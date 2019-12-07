@@ -21,8 +21,9 @@ class ImageManager {
     getModelFolderPath(modelName){
         const uModel = modelName.toUpperCase();
         const modelPath = path.resolve(publicFolderPath, imageFolder.name, imageFolder.subFolders[uModel]);
-        if (fs.existsSync(modelPath)) return modelPath;
-        throw new Error(`There is no image folder corresponding to the model ${uModel}`);
+        if (!fs.existsSync(modelPath)) 
+            fs.mkdirSync(modelPath);
+        return modelPath;
     }
 
     async getImagePath(modelName, name){
