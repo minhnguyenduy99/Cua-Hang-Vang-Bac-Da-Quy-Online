@@ -20,7 +20,8 @@ module.exports.init = async () => {
             allows: [
                 { resources: 'logout',   permissions: 'get'   },
                 { resources: 'sanpham',  permissions: ['get'] },
-                { resources: 'khachhang',permissions: ['view', 'update', 'phieumuahang']}
+                { resources: 'khachhang',permissions: ['view', 'update', 'phieumuahang']},
+                { resources: 'dichvu', permissions: 'get' }
             ]
         },
         {
@@ -52,7 +53,7 @@ module.exports.init = async () => {
         }
     ])
 
-    _acl.addRoleParents('giamdoc', ['nhanvien', 'qlnhansu', 'qlkho']);
+    _acl.addRoleParents('giamdoc', ['nhanvien', 'qlnhansu', 'qlkho', 'khachhang']);
 
     _acl.addUserRoles(FIRST_LOG_ID, 'firstAccessor');
 
