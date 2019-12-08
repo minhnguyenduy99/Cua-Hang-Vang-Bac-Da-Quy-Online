@@ -37,6 +37,7 @@ module.exports.init = async () => {
             allows: [
                 { resources: 'quanly', permissions: ['nhanvien', 'khachhang', 'diemdanh', 'baocao', 'luong'] },
                 { resources: 'sanpham', permissions: 'get' },
+                { resources: 'nhanvien', permissions: ['profile'] }
             ]
         },
         {

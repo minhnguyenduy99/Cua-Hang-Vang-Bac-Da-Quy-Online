@@ -10,13 +10,13 @@ function parseArgs(){
             mode                : "TEST",
 
             //  The database connection name specified in serverConfig.js
-            db                  : "DEVELOPMENT",          
+            db                  : "LOCAL",          
 
             // The sync option. Could be:
             //  'all'
             //  An array of model to be sync,
             //  null (not sync)
-            sync                : 'all',
+            sync                : null,
 
             // Sync TableIDs table
             tableID             : false

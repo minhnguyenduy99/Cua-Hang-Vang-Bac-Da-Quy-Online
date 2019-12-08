@@ -4,13 +4,13 @@ const sender    = require('./response-sender');
 const { ErrorHandler }  = require('../middlewares/error-handler');
 
 
-router.use((req, res, next) => {
-    // check weither the session for user exists
-    if (req.user)
-        next();
-    else
-        next(ErrorHandler.createError('unauthorized'));
-})
+// router.use((req, res, next) => {
+//     // check weither the session for user exists
+//     if (req.isAuthenticated())
+//         next();
+//     else
+//         next(ErrorHandler.createError('unauthorized'));
+// })
 
 router.get('/', (req, res, next) => {
     req.logOut();

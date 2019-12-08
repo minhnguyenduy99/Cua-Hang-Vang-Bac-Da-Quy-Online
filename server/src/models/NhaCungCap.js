@@ -31,7 +31,7 @@ class NhaCungCap extends BaseModel{
             anhdaidien: {
                 type: sequelize.STRING,
                 allowNull: true,
-                field: 'NhaCungCap'
+                field: 'AnhDaiDien'
             },
             tonggiatrinhap: {
                 type: sequelize.INTEGER,

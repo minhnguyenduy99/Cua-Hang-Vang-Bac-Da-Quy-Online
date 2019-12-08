@@ -7,11 +7,6 @@ const accesser      = require('../config/access-control');
 const { acl, getMappingRole } = accesser;
 
 function authenticateCallBack(req, res, next){
-    if (req.isAuthenticated()){
-        req.taikhoan = req.user;
-        next('route');
-        return;
-    }
     passport.authenticate(req.authname, (err, taikhoan, info) => {
         if (err){
             return next(err);
@@ -19,14 +14,12 @@ function authenticateCallBack(req, res, next){
         if (!taikhoan){
             return sender.authenticated(res, {valid: false, data: null})
         }
-        if (req.body.nhomatkhau){
-            req.logIn(taikhoan, err => {
-                if (err){
-                    next(err);
-                    return;
-                }
-            })    
-        }
+        req.logIn(taikhoan, err => {
+            if (err){
+                next(err);
+                return;
+            }
+        })    
         req.taikhoan = taikhoan;
         next();
     })(req, res, next);
