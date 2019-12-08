@@ -63,17 +63,17 @@ class ImageManager {
         return fs.readFileSync(path.join(defaultFolder, imageName));
     }
 
-    async useDefaultImage(modelName, imageName){
-        const image = await this.getDefaultImage(modelName);
-        const imageName = ImageManager.generateFileName();
-        const imagePath = path.join(this.getModelFolderPath(modelName), imageName);
+    // async useDefaultImage(modelName, imageName){
+    //     const image = await this.getDefaultImage(modelName);
+    //     const imgName = ImageManager.generateFileName();
+    //     const imagePath = path.join(this.getModelFolderPath(modelName), imgName);
 
-        fs.writeFile(imagePath, image, (err) => {
-            if (err) console.log(`[${modelName.toUpperCase()}] Cannot write the image`);
-        })
+    //     fs.writeFile(imagePath, image, (err) => {
+    //         if (err) console.log(`[${modelName.toUpperCase()}] Cannot write the image`);
+    //     })
 
-        return imagePath;
-    }
+    //     return imagePath;
+    // }
 
     async deleteAllModelImages(model){
         const modelDir = this.getModelFolderPath(model);
