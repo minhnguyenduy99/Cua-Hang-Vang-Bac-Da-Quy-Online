@@ -23,6 +23,10 @@ class ChiTietPhieu extends BaseModel{
                             done(BaseModel.validationError(6));
                             return;
                         }
+                        if (ChiTietPhieu.getCheckSoLuong()){
+                            done();
+                            return;
+                        }
                         SanPham.findOne({
                             where: {idsp: this.idsp}
                         })
@@ -66,6 +70,14 @@ class ChiTietPhieu extends BaseModel{
                 { unique: true, name: 'idsp_idphieu', fields: ['idsp', 'idphieu'], }
             ]
         })
+    }
+    
+    static setCheckSoLuong(value){
+        ChiTietPhieu.checkSoLuong = value;
+    }
+
+    static getCheckSoLuong(){
+        return ChiTietPhieu.checkSoLuong || true;
     }
 
     static async setAssociations(){

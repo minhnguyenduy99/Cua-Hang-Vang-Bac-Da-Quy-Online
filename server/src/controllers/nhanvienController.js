@@ -1,10 +1,8 @@
 const responser = require('./baseController');
 const NhanVien = require('../models/NhanVien');
 const TaiKhoan = require('../models/TaiKhoan');
-const ImageManager = require('../models/ImageManager').getInstance();
 const ListChucVu = require('../config/application-config').AppGlobalRule.CHUC_VU;
 const ErrorHandler  = require('../middlewares/error-handler').ErrorHandler;
-const ChiTietLuong    = require('../models/ChiTietLuong')
 
 module.exports.GetAllNhanVien_GET = (req, res, next) => {
     NhanVien.findAllNhanVien()
@@ -34,7 +32,6 @@ module.exports.CreateNewNhanVien_POST = (req, res, next) => {
         next();
     })
     .catch(err => {
-        ImageManager.deleteImage(NhanVien.name, req.body.anhdaidien);
         next(err);
     });
 }

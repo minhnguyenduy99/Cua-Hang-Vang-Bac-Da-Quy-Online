@@ -3,7 +3,6 @@ const sqlInstance       = require('./DBInterface').getSequelizeInstance();
 const appValidator      = require('../config/application-config');
 const TableIDs          = require('./TableLastIDs');
 const BaseModel         = require('./BaseModel');
-const ImageManager      = require('./ImageManager').getInstance();
 const ErrorHandler      = require('../middlewares/error-handler').ErrorHandler;
 const ConditionParser   = require('../helpers/condition-parser');
 
@@ -128,9 +127,6 @@ class SanPham extends BaseModel{
                 }
             ],
             hooks: {
-                afterSync(options){
-                    ImageManager.deleteAllModelImages('SanPham');
-                },
                 beforeCreate(sanpham, options){
                     // Số lượng khi tạo sản phẩm mặc định là 0
                     sanpham.set('soluong', 0);
@@ -232,12 +228,30 @@ class SanPham extends BaseModel{
         return listSanPham;
     }
 
-    static async createSanPham(sanPhamObj){
+    static async createSanPham(sanPhamObj, transaction = null){
 
         sanPhamObj.idsp = await TableIDs.autoIncrementID(SanPham, SanPham.getModelIDPrefix());
-        return SanPham.create(sanPhamObj)
+        return SanPham.create(sanPhamObj, {
+            transaction: transaction
+        })
         .then(newSanPham => {
             return newSanPham;
+        })
+        .catch(err => {
+            console.log(err);
+            throw err;
+        })
+    }
+
+    static async createBulkSanPham(listSanPhamObj){
+        if (!listSanPhamObj || listSanPhamObj.length === 0){
+            return Promise.reject(ErrorHandler.createError('invalid_value'));
+        }
+
+        return sqlInstance.transaction(async (t) => {
+            for(let sanphamObj of listSanPhamObj){
+                await this.createSanPham(sanphamObj, t);
+            }
         })
         .catch(err => {
             console.log(err);
@@ -289,15 +303,7 @@ class SanPham extends BaseModel{
     }
 
     async updateModel(updateObj, transaction = null){
-        let anhdaidien = updateObj.anhdaidien ? this.anhdaidien : null;
-        
         const updateResult = await super.updateModel(updateObj, transaction);
-
-        if (!anhdaidien)
-            return updateResult;
-        
-        if (updateResult.success)
-            ImageManager.deleteImage('sanpham', anhdaidien);
         
         return updateResult;
     }
@@ -307,9 +313,9 @@ class SanPham extends BaseModel{
 
         if (!sanpham)
             throw ErrorHandler.createError('rs_not_found', { fields: ['idsp'] })
-        const result = await sanpham.updateModel(updateObj, null);
+        const success = await sanpham.updateModel(updateObj, null);
 
-        return result.success;
+        return success;
     }
 }
 

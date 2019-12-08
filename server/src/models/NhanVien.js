@@ -3,8 +3,6 @@ const sequelize             = require('sequelize');
 const uuid                  = require('uuid');
 const appConfig             = require('../config/application-config');
 const BaseModel             = require('./BaseModel');
-const ImageManager          = require('./ImageManager').getInstance();
-const ChiTietLuong          = require('./ChiTietLuong');
 const ErrorHandler          = require('../middlewares/error-handler').ErrorHandler;
 const TaiKhoan              = require('./TaiKhoan');
 
@@ -83,11 +81,6 @@ class NhanVien extends BaseModel{
             createdAt: createdAt,
             paranoid: true,
             sequelize: sqlInstance,
-            hooks: {
-                afterSync(options){
-                    ImageManager.deleteAllModelImages('NhanVien');
-                },
-            },
         })
     }
 
@@ -223,7 +216,7 @@ class NhanVien extends BaseModel{
             const result = await Promise.all([
                 nhanvien.updateModel(updateObj, t),
                 taikhoan.updateModel(updateObj, t)]);
-            return result.reduce((pre, cur) => pre.success && cur.success)
+            return result.reduce((pre, cur) => pre && cur)
         })
 
         return Object.setPrototypeOf(success, null);

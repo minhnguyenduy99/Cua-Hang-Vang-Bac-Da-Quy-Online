@@ -59,6 +59,12 @@ class PhieuNhapKho extends Phieu{
         })
     }
 
+    static async _beforeCreateHook(phieuObj){
+        const ChiTietPhieu = require('./ChiTietPhieu');
+        await super._beforeCreateHook(phieuObj);
+        ChiTietPhieu.setCheckSoLuong(false);
+    }
+
     static async _customValidate(phieuObj){
         const ChiTietModel = PhieuNhapKho._getChiTietModel();
 

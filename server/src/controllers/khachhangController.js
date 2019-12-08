@@ -1,7 +1,6 @@
 const KhachHang = require('../models/KhachHang');
 const responser = require('./baseController');
 const TaiKhoan = require('../models/TaiKhoan');
-const ImageManager = require('../models/ImageManager').getInstance();
 const ListLTK     = require('../config/application-config').AppGlobalRule.LOAI_TAI_KHOAN;
 const ErrorHandler      = require('../middlewares/error-handler').ErrorHandler;
 
@@ -23,8 +22,6 @@ exports.CreateNewKhachHang_POST = (req, res, next) => {
         next();
     })
     .catch(err => {
-        // delete the created image of model instance
-        ImageManager.deleteImage('KhachHang', req.body.anhdaidien);
         next(err);
     });
 }

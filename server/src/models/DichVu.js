@@ -3,7 +3,6 @@ const sqlInstance       = require('./DBInterface').getSequelizeInstance();
 const appValidator      = require('../config/application-config').dataValidator;
 const TableIDs          = require('./TableLastIDs');
 const BaseModel         = require('./BaseModel');
-const ImageManager      = require('./ImageManager').getInstance();
 const ErrorHandler      = require('../middlewares/error-handler').ErrorHandler;
 
 const Op = sequelize.Op;
@@ -61,11 +60,6 @@ class DichVu extends BaseModel{
             updatedAt: updatedAt,
             createdAt: createdAt,
             paranoid: true,
-            hooks: {
-                afterSync(options){
-                    ImageManager.deleteAllModelImages('DichVu');
-                }
-            },
         })
     }
 
@@ -107,13 +101,31 @@ class DichVu extends BaseModel{
         })
     }
 
-    static async createDichVu(dichvuObj){
+    static async createDichVu(dichvuObj, transaction = null){
         const newID = await TableIDs.autoIncrementID(DichVu, DichVu.getModelIDPrefix());
         dichvuObj.iddv = newID;
 
-        return DichVu.create(dichvuObj)
+        return DichVu.create(dichvuObj, {
+            transaction: transaction
+        })
         .then(newDV => {
             return newDV;
+        })
+        .catch(err => {
+            console.log(err);
+            throw err;
+        })
+    }
+
+    static async createBulkDichVu(listDichVuObj){
+        if (!listDichVuObj || !listDichVuObj instanceof Array){
+            return Promise.reject(ErrorHandler.createError('invalid_value'));
+        }
+
+        return sqlInstance.transaction(async (t) => {
+            for(let dichvuObj of listDichVuObj){
+                await this.createDichVu(dichvuObj, t);
+            }
         })
         .catch(err => {
             console.log(err);
@@ -155,16 +167,8 @@ class DichVu extends BaseModel{
     }
 
     async updateModel(updateObj, transaction = null){
-        let anhdaidien = updateObj.anhdaidien ? this.anhdaidien : null;
-        
         const updateResult = await super.updateModel(updateObj, transaction);
 
-        if (!anhdaidien)
-            return updateResult;
-        
-        if (updateResult.success)
-            ImageManager.deleteImage('dichvu', anhdaidien);
-        
         return updateResult;
     }
 
@@ -173,9 +177,9 @@ class DichVu extends BaseModel{
 
         if (!dichvu)
             throw ErrorHandler.createError('rs_not_found', { fields: ['iddv'] })
-        const result = await dichvu.updateModel(updateObj, null);
+        const success = await dichvu.updateModel(updateObj, null);
 
-        return result.success;
+        return success;
     }
 }
 

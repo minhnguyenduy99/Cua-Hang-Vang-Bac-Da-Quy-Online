@@ -16,6 +16,17 @@ module.exports.RegisterNhaCungCap_POST = (req, res, next) => {
     })
 }
 
+module.exports.RegisterBulkNhaCC_POST = (req, res, next) => {
+    NhaCungCap.createBulkNhaCC(req.body)
+    .then(() => {
+        req.result = responser.created({ options: { valid: true }})
+        next();
+    })
+    .catch(err => {
+        next(err);
+    })
+}
+
 module.exports.GetAllNhaCungCap_GET = (req, res, next) => {
     NhaCungCap.findAll()
     .then(listNCC => {
@@ -73,5 +84,7 @@ module.exports.UpdateNhaCungCap_PUT = (req, res, next) => {
         req.result = responser.updated({ options: { success: success }});
         next();
     })
-    .catch(err => next(err));
+    .catch(err => {
+        next(err);
+    });
 }

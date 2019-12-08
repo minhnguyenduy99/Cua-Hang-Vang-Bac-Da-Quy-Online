@@ -6,7 +6,7 @@ const router    = express.Router();
 const ERROR_KEY_MAPPING = {
     not_unique          :   { code: 1, name: 'KEY_EXISTS'           },
     is                  :   { code: 2, name: 'WRONG_FORMAT'         },
-    in                  :   { code: 3, name: 'VALUE_UNDEFINED'      },
+    isIn                :   { code: 3, name: 'VALUE_UNDEFINED'      },
     fk_not_found        :   { code: 4, name: 'KEY_VALUE_NOT_FOUND'  },
     rs_not_found        :   { code: 5, name: 'RESOURCE_NOT_FOUND'   },
     invalid_value       :   { code: 6, name: 'INVALID_VALUE'        },

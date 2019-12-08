@@ -57,24 +57,16 @@ class BaseModel extends sequelize.Model{
     getUpdatableFieldList(){ return [] }
 
     async updateModel(updateObj, transaction = null){
-        if (!updateObj) return { success: null }
+        if (!updateObj) return false;
         Object.setPrototypeOf(updateObj, null);
         try{
             const fields = this.getUpdatableFieldList();
             await this.update(updateObj, { fields: fields }, { transaction: transaction })
-            return { success: true }
+            return true;
         }
         catch(err){
             console.log('[UpdateError] ' + err);
             throw err;
-        }
-
-        function removeNullField(obj, removePredicate = (obj, propName) => obj[propName] === undefined){
-            for (var propName in obj) { 
-                if (removePredicate(obj, propName)) {
-                  delete obj[propName];
-                }
-            }
         }
     }
 }

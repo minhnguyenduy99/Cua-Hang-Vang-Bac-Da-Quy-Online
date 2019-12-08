@@ -37,19 +37,22 @@ module.exports.init = async () => {
             allows: [
                 { resources: 'quanly', permissions: ['nhanvien', 'khachhang', 'diemdanh', 'baocao', 'luong'] },
                 { resources: 'sanpham', permissions: 'get' },
-                { resources: 'nhanvien', permissions: ['profile'] }
+                { resources: 'nhanvien', permissions: ['profile'] },
+                { resources: 'dichvu', permissions: 'get'}
             ]
         },
         {
             roles: 'qlkho',
             allows: [
                 { resources: 'kho',     permissions: ['nhacungcap', 'phieu'] },
-                { resources: 'sanpham', permissions: '*' }
+                { resources: 'sanpham', permissions: '*' },
+                { resources: 'nhanvien', permissions: ['profile'] },
+                { resources: 'dichvu', permissions: 'get'}
             ]
         }
     ])
 
-    _acl.addRoleParents('giamdoc', ['nhanvien', 'qlnhansu']);
+    _acl.addRoleParents('giamdoc', ['nhanvien', 'qlnhansu', 'qlkho']);
 
     _acl.addUserRoles(FIRST_LOG_ID, 'firstAccessor');
 

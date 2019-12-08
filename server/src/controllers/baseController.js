@@ -2,13 +2,13 @@ const CODE    =   require('../config/serverConfig').SERVER_RESPONE_CODE;
 
 module.exports = class BaseController{
     
-    static created(options){
-        let {data} = options;
+    static created(result){
+        let { data, options } = result;
         
         data                   = data || null;
         const statusCode       = 201;
 
-        return {statusCode, data};
+        return {statusCode, data, options};
     }
 
     static deleted(options){

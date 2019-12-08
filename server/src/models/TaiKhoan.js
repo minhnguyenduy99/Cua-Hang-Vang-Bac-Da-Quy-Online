@@ -5,7 +5,6 @@ const sequelize             = require('sequelize');
 const validator             = require('../config/application-config');
 const BaseModel             = require('./BaseModel');
 const DateHelper            = require('../helpers/date-helper');
-const ImageManager          = require('./ImageManager').getInstance();
 
 const sqlInstance           = DBInterface.getSequelizeInstance();
 const appValidator          = validator.dataValidator;
@@ -273,17 +272,9 @@ class TaiKhoan extends BaseModel{
     }
 
     async updateModel(updateObj, transaction = null){
-        let anhdaidien = updateObj.anhdaidien ? this.anhdaidien : null;
-        
-        const updateResult = await super.updateModel(updateObj, transaction);
+        const success = await super.updateModel(updateObj, transaction);
 
-        if (!anhdaidien)
-            return updateResult;
-        
-        if (updateResult.success)
-            ImageManager.deleteImage(updateObj.modelname, anhdaidien);
-        
-        return updateResult;
+        return success;
     }
 }
 

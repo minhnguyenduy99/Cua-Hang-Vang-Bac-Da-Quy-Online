@@ -3,8 +3,7 @@ const uuid              = require('uuid');
 const appConfig         = require('../config/application-config');
 const sqlInstance       = require('./DBInterface').getSequelizeInstance();
 const BaseModel         = require('./BaseModel');
-const ImageManager      = require('./ImageManager').getInstance();
-
+const ErrorHandler      = require('../middlewares/error-handler').ErrorHandler;
 const dataValidator         = appConfig.dataValidator;
 const appConfigValidator    = appConfig.AppGlobalRule;
 
@@ -45,11 +44,6 @@ class NhaCungCap extends BaseModel{
             tableName: 'NhaCungCap',
             sequelize: sqlInstance,
             timestamps: false,
-            hooks: {
-                afterSync(options){
-                    ImageManager.deleteAllModelImages('NhaCungCap');
-                },
-            },
         })
     }
 
@@ -77,6 +71,22 @@ class NhaCungCap extends BaseModel{
             group: ['idsp']
         })
     }
+
+    static async createBulkNhaCC(listNhaCCObj){
+        if (!listNhaCCObj || !listNhaCCObj instanceof Array || listNhaCCObj.length === 0){
+            return Promise.reject(ErrorHandler.createError('invalid_value'));
+        }
+
+        return sqlInstance.transaction(async (t) => {
+            for(let nhaccObj of listNhaCCObj){
+                await this.create(nhaccObj, { transaction: t});
+            }
+        })
+        .catch(err => {
+            console.log(err);
+            throw err;
+        })
+    }
     
     static findAllSanPham(id){
         return NhaCungCap.scope('withAllSanPham').findOne({
@@ -89,15 +99,7 @@ class NhaCungCap extends BaseModel{
     }
 
     async updateModel(updateObj, transaction = null){
-        let anhdaidien = updateObj.anhdaidien ? this.anhdaidien : null;
-        
         const updateResult = await super.updateModel(updateObj, transaction);
-
-        if (!anhdaidien)
-            return updateResult;
-        
-        if (updateResult.success)
-            ImageManager.deleteImage('nhacungcap', anhdaidien);
         
         return updateResult;
     }
@@ -108,9 +110,9 @@ class NhaCungCap extends BaseModel{
             throw ErrorHandler.createError('rs_not_found', {fields: ['idnhacc']});
         }
 
-        const result = await nhacungcap.updateModel(updateObj, null);
+        const success = await nhacungcap.updateModel(updateObj, null);
 
-        return result.success;
+        return success;
     }
 }
 

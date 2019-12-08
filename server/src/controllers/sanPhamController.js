@@ -1,6 +1,5 @@
 const SanPham      = require('../models/SanPham');
 const responser    = require('./baseController');
-const ImageManager = require('../models/ImageManager').getInstance();
 const ErrorHandler = require('../middlewares/error-handler').ErrorHandler;
 
 module.exports.GetToanBoSanPham_GET = (req, res, next) => {
@@ -44,7 +43,17 @@ module.exports.ThemSanPham_POST = (req, res, next) => {
         next();
     })
     .catch(err => {
-        ImageManager.deleteImage(SanPham.name, req.body.anhdaidien);
+        next(err);
+    })
+}
+
+module.exports.CreateBulkSanPham_POST = (req, res, next) => {
+    SanPham.createBulkSanPham(req.body)
+    .then(() => {
+        req.result = responser.created({ options: { valid: true } })
+        next();
+    })
+    .catch(err => {
         next(err);
     })
 }

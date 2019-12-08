@@ -17,6 +17,17 @@ module.exports.ThemDichVu_POST = (req, res, next) => {
     });
 }
 
+module.exports.ThemBulkDichVu_POST = (req, res, next) => {
+    DichVu.createBulkDichVu(req.body)
+    .then(success => {
+        req.result = responser.created({ options: { success: true }})
+        next();
+    })
+    .catch(err => {
+        next(err);
+    })
+}
+
 module.exports.GetAllDichVu_GET = (req, res, next) => {
 
     DichVu.findAll()

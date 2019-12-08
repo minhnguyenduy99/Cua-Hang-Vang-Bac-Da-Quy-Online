@@ -4,7 +4,6 @@ const dbInterface           = require('./DBInterface');
 const appConfig             = require('../config/application-config');
 const BaseModel             = require('./BaseModel');
 const Phieu                 = require('./Phieu');
-const ImageManager          = require('./ImageManager').getInstance();
 const ErrorHandler          = require('../middlewares/error-handler').ErrorHandler;
 const TaiKhoan              = require('./TaiKhoan');
 
@@ -56,9 +55,6 @@ class KhachHang extends BaseModel{
                         return;
                     }
                 },
-                afterSync: (options) => {
-                    ImageManager.deleteAllModelImages('KhachHang');
-                }
             }
         })
     }
@@ -226,7 +222,7 @@ class KhachHang extends BaseModel{
                 khachhang.updateModel(updateObj, t),
                 taikhoan.updateModel(updateObj, t)
             ])
-            return results.reduce((pre, cur) => pre.success && cur.success);
+            return results.reduce((pre, cur) => pre && cur);
         })
 
         return success;
