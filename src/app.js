@@ -1,26 +1,30 @@
+const path             = require('path');
+
 // external packages import
-const express          = require('express');
-const bodyParser       = require('body-parser');
-const morgan           = require('morgan');
-const passport         = require('passport');
-const session          = require('express-session');
-const publicPath       = require('./config/serverConfig').publicFolderPath;
+const express           = require('express');
+const cors              = require('cors');
+const bodyParser        = require('body-parser');
+const morgan            = require('morgan');
+const passport          = require('passport');
+const session           = require('express-session');
+const publicPath        = require('./config/serverConfig').publicFolderPath;
 const {ErrorHandler, router: ErrorRouter}     = require('./middlewares/error-handler');
 
 // server route import
-const khachhangRoute   = require('./routes/khachhang');
-const sanphamRoute     = require('./routes/sanpham');
-const dichvuRoute      = require('./routes/dichvu');
-const quanlyRoute      = require('./routes/quanly/route');
-const nhanvienRoute    = require('./routes/nhanvien/route');
-const khoRoute         = require('./routes/kho/route');
-const loginRoute       = require('./routes/login');
-const logoutRoute      = require('./routes/logout');
+const khachhangRoute    = require('./routes/khachhang');
+const sanphamRoute      = require('./routes/sanpham');
+const dichvuRoute       = require('./routes/dichvu');
+const quanlyRoute       = require('./routes/quanly/route');
+const nhanvienRoute     = require('./routes/nhanvien/route');
+const khoRoute          = require('./routes/kho/route');
+const loginRoute        = require('./routes/login');
+const logoutRoute       = require('./routes/logout');
 
 
 const passportConfig   = require('./config/passport');
 
 const app = express();
+app.use(cors()); // enable CORS policy
 
 // config session
 app.use(session({
@@ -51,6 +55,13 @@ app.use('/kho', khoRoute);
 app.use('/login', loginRoute);
 app.use('/logout', logoutRoute);
 app.use('/khachhang', khachhangRoute);
+
+// client side rendering
+app.use(express.static(path.join(__dirname, '..', 'build')));
+app.get('/', function (req, res)
+{
+    res.sendFile(path.join(__dirname, '..', 'build', 'index.html'))
+});
 
 // handle request not found error
 app.use((req, res, next) => {

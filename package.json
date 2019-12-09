@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "nodemon --inspect server.js --mode TEST",
-    "dev": "nodemon server.js --db LOCAL",
+    "dev": "nodemon server.js --db DEVELOPMENT",
     "connect_db": "nodemon database.js --db LOCAL"
   },
   "keywords": [],
@@ -14,6 +14,7 @@
   "dependencies": {
     "acl": "^0.4.11",
     "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
     "express": "^4.17.1",
     "express-session": "^1.17.0",
     "jsonwebtoken": "^8.5.1",
