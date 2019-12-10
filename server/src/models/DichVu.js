@@ -31,13 +31,13 @@ class DichVu extends BaseModel{
                 type: sequelize.INTEGER,
                 allowNull: false,
                 defaultValue: 0,
-                validate: {
-                    is: appValidator.TienTe
-                },
+                // validate: {
+                //     is: appValidator.TienTe
+                // },
                 field: 'GiaGiaCong',
             },
             loaidv: {
-                type: sequelize.STRING(20),
+                type: sequelize.STRING(100),
                 allowNull: false,
                 field: 'LoaiDichVu',
             },

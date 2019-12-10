@@ -35,6 +35,15 @@ module.exports.GetSanPham_BySearch_GET = (req, res, next) => {
     .catch(err => next(err));
 }
 
+module.exports.GetAllLoaiSanPham_GET = (req, res, next) => {
+    SanPham.findAllLoaiSanPham()
+    .then(listLoaiSP => {
+        req.result = responser.get({ data: listLoaiSP });
+        next();
+    })
+    .catch(err => next(err));
+}
+
 module.exports.ThemSanPham_POST = (req, res, next) => {
     SanPham.createSanPham(req.body)
     .then(sanPham => {

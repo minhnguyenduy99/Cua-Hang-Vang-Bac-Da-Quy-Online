@@ -26,9 +26,11 @@ var serverConfig = {
             password: 'localhost123',
             port: 3306,
             database: 'cuahangvangbacdaquy',
-            logging: true
+            logging: false
         },
     ],
+
+    hostIP: '26.154.82.91',
 
     publicFolderPath: path.resolve(__dirname, '../../public/'),
 

@@ -10,6 +10,7 @@ class TableLastIDs extends BaseModel{
             PHIEU   : 4,
             DICHVU  : 3,
             BAOCAO  : 4,
+            NHACC   : 3
         }
     };
 
@@ -30,6 +31,10 @@ class TableLastIDs extends BaseModel{
             BAOCAO: {
                 type: sequelize.INTEGER.UNSIGNED,
                 default: 0
+            },
+            NHACUNGCAP: {
+                type :sequelize.INTEGER.UNSIGNED,
+                defaultValue: 0,
             }
         }, {
             tableName: 'TableLastIDs',
@@ -41,7 +46,8 @@ class TableLastIDs extends BaseModel{
                         SANPHAM: 0,
                         PHIEU: 0,
                         DICHVU: 0,
-                        BAOCAO: 0
+                        BAOCAO: 0,
+                        NHACUNGCAP: 0
                     })
                     .catch(err => {
                         console.log(err);

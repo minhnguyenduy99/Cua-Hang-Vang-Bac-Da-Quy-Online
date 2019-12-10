@@ -65,9 +65,9 @@ class NhanVien extends BaseModel{
                 type: sequelize.INTEGER,
                 allowNull: false,
                 defaultValue: 0,
-                validate: {
-                    is: data_validator.TienTe
-                },
+                // validate: {
+                //     is: data_validator.TienTe
+                // },
                 field: 'LuongCoBan',
                 set(value){
                     this.setDataValue('luongcoban', parseInt(value.toString()))
@@ -177,9 +177,9 @@ class NhanVien extends BaseModel{
         if (!taikhoan || !taikhoan.nhanvien)
             return null;
         
-        const { idtk, loaitk, nhanvien: { idnv } } = taikhoan;
+        const { idtk, loaitk, hoten, nhanvien: { idnv } } = taikhoan;
 
-        return { idtk, idnv, loaitk };
+        return {idtk, loaitk, hoten, idnv};
     }
 
     static register(taikhoan, nhanvien){

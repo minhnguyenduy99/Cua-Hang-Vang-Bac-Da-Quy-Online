@@ -17,7 +17,7 @@ class PhieuNhapKho extends Phieu{
                 field: 'IDPhieu'
             },
             idnhacc: {
-                type: sequelize.UUID,
+                type: sequelize.STRING,
                 allowNull: false,
                 field: 'IDNhaCC',
             }
