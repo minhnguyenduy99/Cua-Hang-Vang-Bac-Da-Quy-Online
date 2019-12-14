@@ -32,6 +32,10 @@ app.use(cors());
 app.use(session({
     secret: 'vbdq_session',
     saveUninitialized: false,
+    resave: true,
+    cookie: {
+        httpOnly: false
+    }
 }))
 
 // middlewares

@@ -54,6 +54,8 @@ router.post('/nhanvien', (req, res, next) => {
 }, authenticateCallBack);
 
 router.use((req, res, next) => {
+    if (req.taikhoan === undefined)
+        return next('router');
     sender.authenticated(res, { valid: true, data: req.taikhoan });
 })
 
