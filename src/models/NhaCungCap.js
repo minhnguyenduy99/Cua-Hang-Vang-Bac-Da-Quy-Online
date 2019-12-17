@@ -1,21 +1,21 @@
 const sequelize         = require('sequelize');
-const uuid              = require('uuid');
 const appConfig         = require('../config/application-config');
 const sqlInstance       = require('./DBInterface').getSequelizeInstance();
 const BaseModel         = require('./BaseModel');
+const TableLastIDs      = require('./TableLastIDs');
 const ErrorHandler      = require('../middlewares/error-handler').ErrorHandler;
 const dataValidator         = appConfig.dataValidator;
 const appConfigValidator    = appConfig.AppGlobalRule;
 
+const ZERO_PADDING = require('./TableLastIDs').ZERO_PADDING_LIST().NHACC;
 
 class NhaCungCap extends BaseModel{
     
     static async initModel(){
         NhaCungCap.init({
             idnhacc: {
-                type: sequelize.UUID,
+                type: sequelize.STRING(this.getModelIDLength()),
                 primaryKey: true,
-                defaultValue: () => uuid(),
                 field: 'IDNhaCC'
             },
             tennhacc: {
@@ -28,7 +28,7 @@ class NhaCungCap extends BaseModel{
                 field: 'DiaChiNhaCC'
             },
             anhdaidien: {
-                type: sequelize.STRING,
+                type: sequelize.TEXT,
                 allowNull: true,
                 field: 'AnhDaiDien'
             },
@@ -45,6 +45,12 @@ class NhaCungCap extends BaseModel{
             sequelize: sqlInstance,
             timestamps: false,
         })
+    }
+
+    static getModelIDPrefix(){ return 'NHACC' }
+
+    static getModelIDLength(){
+        return this.getModelIDPrefix().length + ZERO_PADDING;
     }
 
     static async setAssociations(){
@@ -79,6 +85,8 @@ class NhaCungCap extends BaseModel{
 
         return sqlInstance.transaction(async (t) => {
             for(let nhaccObj of listNhaCCObj){
+                const id = await TableLastIDs.autoIncrementID(NhaCungCap, NhaCungCap.getModelIDPrefix());
+                nhaccObj.idnhacc = id;
                 await this.create(nhaccObj, { transaction: t});
             }
         })

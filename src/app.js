@@ -1,6 +1,7 @@
 const path             = require('path');
 
 // external packages import
+
 const express           = require('express');
 const cors              = require('cors');
 const bodyParser        = require('body-parser');
@@ -8,6 +9,7 @@ const morgan            = require('morgan');
 const passport          = require('passport');
 const session           = require('express-session');
 const publicPath        = require('./config/serverConfig').publicFolderPath;
+
 const {ErrorHandler, router: ErrorRouter}     = require('./middlewares/error-handler');
 
 // server route import
@@ -24,12 +26,16 @@ const logoutRoute       = require('./routes/logout');
 const passportConfig   = require('./config/passport');
 
 const app = express();
-app.use(cors()); // enable CORS policy
+app.use(cors());
 
 // config session
 app.use(session({
     secret: 'vbdq_session',
     saveUninitialized: false,
+    resave: true,
+    cookie: {
+        httpOnly: false
+    }
 }))
 
 // middlewares
@@ -79,7 +85,7 @@ app.use(ErrorRouter, (err, req, res, next) => {
     status = status || 500;
     res.status(status);
     if (status == 500)
-        console.log(`[ERROR][Unhandled] ${err}`);
+        console.log(`[ERROR][Unhandled] ${err.message}`);
     else   
         console.log(`[ERROR][Handled] ${err.name}`);
     res.json(errInfo);

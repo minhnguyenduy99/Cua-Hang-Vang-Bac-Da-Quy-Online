@@ -86,7 +86,7 @@ class SanPham extends BaseModel{
                 field: 'TinhTrang'
             },
             anhdaidien: {
-                type: sequelize.STRING,
+                type: sequelize.TEXT,
                 defaultValue: '',
                 field: 'AnhDaiDien'
             },
@@ -316,6 +316,16 @@ class SanPham extends BaseModel{
         const success = await sanpham.updateModel(updateObj, null);
 
         return success;
+    }
+
+    static async findAllLoaiSanPham(){
+        const listLoaiSP = await  SanPham.findAll({
+            attributes: [
+                [sequelize.fn('DISTINCT', sequelize.col('loaisp')), 'loaisp']
+            ],
+            raw: true
+        })
+        return listLoaiSP.map(sanpham => sanpham.loaisp);
     }
 }
 

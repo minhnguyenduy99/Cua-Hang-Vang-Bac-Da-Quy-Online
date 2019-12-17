@@ -4,33 +4,15 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-
-        {   
+        {
             "type": "node",
             "request": "launch",
             "name": "Launch Program",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
             "program": "${workspaceFolder}\\server.js",
-            "args": [
-                "DEVELOPMENT"
-            ]
-        },
-        {
-            "type": "node",
-            "request": "launch",
-            "name": "Test DB",
-            "program": "${workspaceFolder}\\server\\server.js",
-            "args": [
-                "TEST"
-            ]
-        },
-        {
-            "type": "node",
-            "request": "launch",
-            "name": "Module test",
-            "program": "${workspaceFolder}\\server\\src\\helpers\\error-handler.js",
-            "args": [
-                "TEST"
-            ]
-        },
+            "args": []
+        }
     ]
 }

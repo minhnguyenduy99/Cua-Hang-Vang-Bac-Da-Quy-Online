@@ -124,7 +124,7 @@ class TaiKhoan extends BaseModel{
                 field: 'DiaChi'
             },
             anhdaidien: {
-                type: sequelize.STRING,
+                type: sequelize.TEXT,
                 field: 'AnhDaiDien',
                 defaultValue: null,
             },

@@ -10,6 +10,7 @@ var serverConfig = {
             password: 'XlKkAmxDDu',
             database: 'pKAX30MXzl',
             port: 3306,
+            logging: false
         },
         {
             name: 'TEST',
@@ -26,7 +27,7 @@ var serverConfig = {
             password: 'localhost123',
             port: 3306,
             database: 'cuahangvangbacdaquy',
-            logging: true
+            logging: false
         },
     ],
 

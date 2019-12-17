@@ -7,20 +7,25 @@ const accesser      = require('../config/access-control');
 const { acl, getMappingRole } = accesser;
 
 function authenticateCallBack(req, res, next){
-    passport.authenticate(req.authname, (err, taikhoan, info) => {
+    passport.authenticate(req.authname, async (err, taikhoan, info) => {
         if (err){
             return next(err);
         }
         if (!taikhoan){
             return sender.authenticated(res, {valid: false, data: null})
         }
-        req.logIn(taikhoan, err => {
+        await req.logIn(taikhoan, err => {
+            console.log('LogIn');
             if (err){
                 next(err);
                 return;
             }
         })    
         req.taikhoan = taikhoan;
+
+        await addRoleToTaiKhoan(req, res, next);
+        console.log('AddRole');
+        
         next();
     })(req, res, next);
 }
@@ -29,7 +34,6 @@ function authenticateCallBack(req, res, next){
 async function addRoleToTaiKhoan(req, res, next){
     const taikhoan = req.taikhoan;
     await acl.addUserRoles(taikhoan.idtk, getMappingRole(taikhoan.loaitk));
-    next();
 }
 
 router.get('/', (req, res) => {
@@ -42,15 +46,17 @@ router.get('/', (req, res) => {
 router.post('/khachhang', (req, res, next) => {
     req.authname = 'khachhang-login';
     next();
-}, authenticateCallBack, addRoleToTaiKhoan);
+}, authenticateCallBack);
 
 router.post('/nhanvien', (req, res, next) => {
     req.authname = 'nhanvien-login';
     next();
-}, authenticateCallBack, addRoleToTaiKhoan);
+}, authenticateCallBack);
 
 router.use((req, res, next) => {
-    sender.authenticated(res, { valid: true, taikhoan: req.taikhoan });
+    if (req.taikhoan === undefined)
+        return next('router');
+    sender.authenticated(res, { valid: true, data: req.taikhoan });
 })
 
 module.exports = router;
