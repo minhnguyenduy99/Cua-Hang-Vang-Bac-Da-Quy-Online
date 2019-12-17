@@ -1,11 +1,10 @@
-module.exports = async function(){
-    const args = require('./server-run-arguments')();
+module.exports = async function(argsOption){
     
     const dbConfigOption = {
-        mode  : args.db,
+        mode  : argsOption.db,
         sync: {
-            models: args.sync,
-            tableID: args.tableID
+            models: argsOption.sync,
+            tableID: argsOption.tableID
         },
     }
 
@@ -21,7 +20,8 @@ module.exports = async function(){
     catch(err){
         if (dbInterface)
             dbInterface.close();
-        console.log(`[ConnectFailed] Cannot connect database ${args.db}`);
+        console.log(`[ConnectFailed] Cannot connect database ${dbConfigOption.mode}`);
+        console.log(`[ConnectFailed] ${err.message}`);
         return false;
     }
 };

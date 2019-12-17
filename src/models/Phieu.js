@@ -28,6 +28,9 @@ class Phieu extends BaseModel{
                 type: sequelize.DATE,
                 defaultValue: () => new Date(),
                 field: 'NgayLapPhieu',
+                set(value){
+                    this.setDataValue('ngaylapphieu', DateHelper.parseFrom(value))
+                }
             },
             ghichu: {
                 type: sequelize.TEXT,
@@ -273,11 +276,18 @@ class Phieu extends BaseModel{
     static findByDynamicallyCondition(loaiphieu, condition){
         const { ngaybatdau, ngayketthuc, ...restCondition } = condition;
 
-        let PhieuModel = Phieu.scope({ method: ['withLoaiPhieu', loaiphieu] });
+        let PhieuModel = Phieu.scope([
+            { method: ['withLoaiPhieu', loaiphieu] },
+            { method: ['withCTPhieu', loaiphieu] }  
+        ]);
         if (ngaybatdau && ngayketthuc){
             const startTime = DateHelper.parseFrom(ngaybatdau).setHours(0);
             const endTime   = DateHelper.parseFrom(ngayketthuc).setHours(24);
-            PhieuModel = PhieuModel.scope({ method: ['byThoiGian', startTime, endTime] });
+            PhieuModel = Phieu.scope([
+                { method: ['withLoaiPhieu', loaiphieu] },
+                { method: ['withCTPhieu', loaiphieu] },  
+                { method: ['byThoiGian', startTime, endTime] }
+            ]);
         }
 
         return PhieuModel.findAll({

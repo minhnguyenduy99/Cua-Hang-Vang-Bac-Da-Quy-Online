@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "nodemon --inspect server.js --mode TEST",
-    "dev": "nodemon server.js --db DEVELOPMENT",
+    "dev": "nodemon server.js --mode DEV --db DEVELOPMENT --hostIP localhost",
     "connect_db": "nodemon database.js --db LOCAL"
   },
   "keywords": [],
@@ -27,6 +27,6 @@
   },
   "devDependencies": {
     "morgan": "^1.9.1",
-    "nodemon": "^1.19.3"
+    "nodemon": "^1.19.4"
   }
 }

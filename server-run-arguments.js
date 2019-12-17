@@ -7,7 +7,9 @@ function parseArgs(){
         },
         default: {
             //  The run mode of server. Include: TEST, DEVLOPMENT
-            mode                : "TEST",
+            mode                : "DEBUG",
+
+            hostIP              : "localhost",
 
             //  The database connection name specified in serverConfig.js
             db                  : "LOCAL",          
@@ -22,7 +24,6 @@ function parseArgs(){
             tableID             : false
         }
     })
-    console.log(args);
     return args;
 }
 

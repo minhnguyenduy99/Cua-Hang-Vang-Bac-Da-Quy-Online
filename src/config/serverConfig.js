@@ -30,6 +30,8 @@ var serverConfig = {
         },
     ],
 
+    hostIP: 'localhost',
+
     publicFolderPath: path.resolve(__dirname, '../../public/'),
 
     storage: {
