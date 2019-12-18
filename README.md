@@ -68,6 +68,6 @@ Update package trong server
 
 - 17520484, Trần Trung Hiếu: Phân tích nghiệp vụ, trình bày báo cáo tổng kết 
 
-- 17520754, Nguyễn Duy Minh: Hiện thực Back-end 100% 
+- 17520754, Nguyễn Duy Minh: Hiện thực Back-end
 
 - 16521433, Nguyễn Sang Viết: Hiện thực Front-end 
