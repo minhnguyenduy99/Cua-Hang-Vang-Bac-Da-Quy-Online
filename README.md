@@ -58,13 +58,16 @@ Update package trong server
 
 > npm update --save-dev
 
-## 7. Báo cáo chi tiết
+## 6. Báo cáo chi tiết
 
 [Báo cáo cuối kì.pdf](https://github.com/vutuanhai237/Self_Driving_Car/files/3976776/Bao.cao.cu.i.ki.pdf)
 
-## 8. Phân công chi tiết
+## 7. Phân công chi tiết
 
 - 17520433, Vũ Tuấn Hải: Phân tích nghiệp vụ, thiết kế giao diện, thiết kế CSDL, trình bày báo cáo tổng kết 
+
 - 17520484, Trần Trung Hiếu: Phân tích nghiệp vụ, trình bày báo cáo tổng kết 
+
 - 17520754, Nguyễn Duy Minh: Hiện thực Back-end 100% 
+
 - 16521433, Nguyễn Sang Viết: Hiện thực Front-end 
